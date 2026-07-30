@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  DOCTOR   // the admin
+  PATIENT
+}
+enum DeviceStatus {
+  ACTIVE        // working normally, in use
+  INACTIVE      // not currently in use / unassigned
+  MAINTENANCE   // temporarily out of service (repair, calibration, firmware update)
+  RETIRED       // permanently decommissioned, no longer usable
+}
+
+model User {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String    @unique
+  passHash   String   
+  role       Role      @default(PATIENT)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+
+  patient       Patient?
+  refreshTokens RefreshToken[]
+
+}
+
+model Patient {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @unique @db.Uuid
+  firstName   String    
+  lastName    String   
+  birthDate   DateTime? @db.Date
+  gender      String?
+  bloodGroup  String?   
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patientDevices PatientDevice[]
+
+}
+
+model Device {
+  id            String    @id @default(uuid()) @db.Uuid
+  serialNumber  String    @unique
+  deviceType    String    
+  status        DeviceStatus    @default(INACTIVE)
+  lastConnected DateTime? @db.Timestamptz(3)
+  createdAt     DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(3)
+
+  patientDevices PatientDevice[]
+
+}
+
+model PatientDevice {
+  id           String    @id @default(uuid()) @db.Uuid
+  patientId    String    @db.Uuid 
+  deviceId     String    @db.Uuid
+  assignedAt   DateTime  @default(now()) @db.Timestamptz(3)
+  unassignedAt DateTime? @db.Timestamptz(3)
+
+  patient      Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  device       Device              @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  measurements HealthMeasurement[]
+
+  @@index([patientId])
+  @@index([deviceId])
+
+}
+
+model HealthMeasurement {
+  id                String        @id @default(uuid()) @db.Uuid
+  patientDeviceId   String        @db.Uuid 
+  heartRate         Int?          
+  spo2              Int?
+  temp              Decimal?      @db.Decimal(4, 1)
+  systolicPressure  Int?         
+  diastolicPressure Int?       
+  respiratoryRate   Int?           
+  timestamp         DateTime      @default(now()) @db.Timestamptz(3)
+
+  patientDevice     PatientDevice @relation(fields: [patientDeviceId], references: [id], onDelete: Cascade)
+
+  @@index([patientDeviceId])
+  @@index([timestamp])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  token     String    @unique
+  expiresAt DateTime  @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
