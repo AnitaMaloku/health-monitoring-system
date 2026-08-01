@@ -33,30 +33,32 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createPatient = void 0;
+exports.deletePatient = exports.updatePatient = exports.getPatientById = exports.getPatients = exports.createPatient = void 0;
 const api_error_1 = require("../../utils/api-error");
 const patientRepository = __importStar(require("./repository"));
-const parseBirthDate = (birthDate) => {
-    if (!birthDate) {
-        return undefined;
-    }
-    const parsed = new Date(birthDate);
-    if (Number.isNaN(parsed.getTime())) {
-        throw new api_error_1.ApiError(400, "birthDate must be a valid date");
-    }
-    return parsed;
-};
-const createPatient = async (input) => {
-    if (!input.userId || !input.firstName || !input.lastName) {
-        throw new api_error_1.ApiError(400, "userId, firstName and lastName are required");
-    }
-    return patientRepository.createPatient({
-        userId: input.userId,
-        firstName: input.firstName,
-        lastName: input.lastName,
-        birthDate: parseBirthDate(input.birthDate),
-        gender: input.gender,
-        bloodGroup: input.bloodGroup
-    });
+const createPatient = async (data) => {
+    return patientRepository.create(data);
 };
 exports.createPatient = createPatient;
+const getPatients = async () => {
+    return patientRepository.findAll();
+};
+exports.getPatients = getPatients;
+const getPatientById = async (id) => {
+    const patient = await patientRepository.findById(id);
+    if (!patient) {
+        throw new api_error_1.ApiError(404, "Patient not found");
+    }
+    return patient;
+};
+exports.getPatientById = getPatientById;
+const updatePatient = async (id, data) => {
+    await (0, exports.getPatientById)(id);
+    return patientRepository.update(id, data);
+};
+exports.updatePatient = updatePatient;
+const deletePatient = async (id) => {
+    await (0, exports.getPatientById)(id);
+    return patientRepository.remove(id);
+};
+exports.deletePatient = deletePatient;

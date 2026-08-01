@@ -33,47 +33,42 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignDeviceToPatient = exports.createDevice = void 0;
-const client_1 = require("../../generated/prisma/client");
+exports.assignDeviceToPatient = exports.deleteDevice = exports.updateDevice = exports.getDeviceById = exports.getDevices = exports.createDevice = void 0;
 const api_error_1 = require("../../utils/api-error");
 const patientRepository = __importStar(require("../patients/repository"));
 const deviceRepository = __importStar(require("./repository"));
-const isDeviceStatus = (status) => {
-    return Object.values(client_1.DeviceStatus).includes(status);
-};
-const parseLastConnected = (lastConnected) => {
-    if (!lastConnected) {
-        return undefined;
-    }
-    const parsed = new Date(lastConnected);
-    if (Number.isNaN(parsed.getTime())) {
-        throw new api_error_1.ApiError(400, "lastConnected must be a valid date");
-    }
-    return parsed;
-};
-const createDevice = async (input) => {
-    if (!input.serialNumber || !input.deviceType) {
-        throw new api_error_1.ApiError(400, "serialNumber and deviceType are required");
-    }
-    if (input.status && !isDeviceStatus(input.status)) {
-        throw new api_error_1.ApiError(400, "Invalid device status");
-    }
-    return deviceRepository.createDevice({
-        serialNumber: input.serialNumber,
-        deviceType: input.deviceType,
-        status: input.status,
-        lastConnected: parseLastConnected(input.lastConnected)
-    });
+const createDevice = async (data) => {
+    return deviceRepository.create(data);
 };
 exports.createDevice = createDevice;
-const assignDeviceToPatient = async (input) => {
-    if (!input.patientId || !input.deviceId) {
-        throw new api_error_1.ApiError(400, "patientId and deviceId are required");
+const getDevices = async () => {
+    return deviceRepository.findAll();
+};
+exports.getDevices = getDevices;
+const getDeviceById = async (id) => {
+    const device = await deviceRepository.findById(id);
+    if (!device) {
+        throw new api_error_1.ApiError(404, "Device not found");
     }
-    const [patient, device, activeAssignment] = await Promise.all([
-        patientRepository.findPatientById(input.patientId),
-        deviceRepository.findDeviceById(input.deviceId),
-        deviceRepository.findActiveAssignmentByDeviceId(input.deviceId)
+    return device;
+};
+exports.getDeviceById = getDeviceById;
+const updateDevice = async (id, data) => {
+    await (0, exports.getDeviceById)(id);
+    return deviceRepository.update(id, data);
+};
+exports.updateDevice = updateDevice;
+const deleteDevice = async (id) => {
+    await (0, exports.getDeviceById)(id);
+    return deviceRepository.remove(id);
+};
+exports.deleteDevice = deleteDevice;
+const assignDeviceToPatient = async (data) => {
+    const [patient, device, patientAssignment, deviceAssignment] = await Promise.all([
+        patientRepository.findById(data.patientId),
+        deviceRepository.findById(data.deviceId),
+        deviceRepository.findActiveAssignmentByPatientId(data.patientId),
+        deviceRepository.findActiveAssignmentByDeviceId(data.deviceId)
     ]);
     if (!patient) {
         throw new api_error_1.ApiError(404, "Patient not found");
@@ -81,9 +76,12 @@ const assignDeviceToPatient = async (input) => {
     if (!device) {
         throw new api_error_1.ApiError(404, "Device not found");
     }
-    if (activeAssignment) {
+    if (patientAssignment) {
+        throw new api_error_1.ApiError(409, "Patient already has an assigned device");
+    }
+    if (deviceAssignment) {
         throw new api_error_1.ApiError(409, "Device is already assigned to a patient");
     }
-    return deviceRepository.assignDeviceToPatient(input.patientId, input.deviceId);
+    return deviceRepository.assignToPatient(data.patientId, data.deviceId);
 };
 exports.assignDeviceToPatient = assignDeviceToPatient;

@@ -1,11 +1,40 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignDeviceToPatient = exports.findActiveAssignmentByDeviceId = exports.findDeviceById = exports.createDevice = void 0;
+exports.assignToPatient = exports.findActiveAssignmentByPatientId = exports.findActiveAssignmentByDeviceId = exports.remove = exports.update = exports.findById = exports.findAll = exports.create = void 0;
 const client_1 = require("../../generated/prisma/client");
 const database_1 = require("../../config/database");
-const createDevice = (data) => {
+const create = (data) => {
     return database_1.prisma.device.create({
-        data,
+        data: {
+            serialNumber: data.serialNumber,
+            deviceType: data.deviceType,
+            status: data.status,
+            lastConnected: data.lastConnected ? new Date(data.lastConnected) : undefined
+        }
+    });
+};
+exports.create = create;
+const findAll = () => {
+    return database_1.prisma.device.findMany({
+        include: {
+            patientDevices: {
+                where: {
+                    unassignedAt: null
+                },
+                include: {
+                    patient: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: "desc"
+        }
+    });
+};
+exports.findAll = findAll;
+const findById = (id) => {
+    return database_1.prisma.device.findUnique({
+        where: { id },
         include: {
             patientDevices: {
                 where: {
@@ -18,13 +47,25 @@ const createDevice = (data) => {
         }
     });
 };
-exports.createDevice = createDevice;
-const findDeviceById = (id) => {
-    return database_1.prisma.device.findUnique({
+exports.findById = findById;
+const update = (id, data) => {
+    return database_1.prisma.device.update({
+        where: { id },
+        data: {
+            serialNumber: data.serialNumber,
+            deviceType: data.deviceType,
+            status: data.status,
+            lastConnected: data.lastConnected ? new Date(data.lastConnected) : undefined
+        }
+    });
+};
+exports.update = update;
+const remove = (id) => {
+    return database_1.prisma.device.delete({
         where: { id }
     });
 };
-exports.findDeviceById = findDeviceById;
+exports.remove = remove;
 const findActiveAssignmentByDeviceId = (deviceId) => {
     return database_1.prisma.patientDevice.findFirst({
         where: {
@@ -34,7 +75,16 @@ const findActiveAssignmentByDeviceId = (deviceId) => {
     });
 };
 exports.findActiveAssignmentByDeviceId = findActiveAssignmentByDeviceId;
-const assignDeviceToPatient = (patientId, deviceId) => {
+const findActiveAssignmentByPatientId = (patientId) => {
+    return database_1.prisma.patientDevice.findFirst({
+        where: {
+            patientId,
+            unassignedAt: null
+        }
+    });
+};
+exports.findActiveAssignmentByPatientId = findActiveAssignmentByPatientId;
+const assignToPatient = (patientId, deviceId) => {
     return database_1.prisma.$transaction(async (tx) => {
         const assignment = await tx.patientDevice.create({
             data: {
@@ -47,9 +97,7 @@ const assignDeviceToPatient = (patientId, deviceId) => {
             }
         });
         await tx.device.update({
-            where: {
-                id: deviceId
-            },
+            where: { id: deviceId },
             data: {
                 status: client_1.DeviceStatus.ACTIVE
             }
@@ -57,4 +105,4 @@ const assignDeviceToPatient = (patientId, deviceId) => {
         return assignment;
     });
 };
-exports.assignDeviceToPatient = assignDeviceToPatient;
+exports.assignToPatient = assignToPatient;

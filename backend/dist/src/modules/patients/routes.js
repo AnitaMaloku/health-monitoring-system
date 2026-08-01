@@ -35,6 +35,11 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const patientController = __importStar(require("./controller"));
+const validation_1 = require("./validation");
 const router = (0, express_1.Router)();
-router.post("/", patientController.createPatient);
+router.post("/", validation_1.validateCreatePatient, patientController.createPatient);
+router.get("/", patientController.getPatients);
+router.get("/:id", patientController.getPatientById);
+router.patch("/:id", validation_1.validateUpdatePatient, patientController.updatePatient);
+router.delete("/:id", patientController.deletePatient);
 exports.default = router;

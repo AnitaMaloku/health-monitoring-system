@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createPatient = void 0;
+exports.deletePatient = exports.updatePatient = exports.getPatientById = exports.getPatients = exports.createPatient = void 0;
 const patientService = __importStar(require("./service"));
 const createPatient = async (req, res, next) => {
     try {
@@ -42,6 +42,47 @@ const createPatient = async (req, res, next) => {
     }
     catch (error) {
         next(error);
+        console.error("Error creating patient:", error);
     }
 };
 exports.createPatient = createPatient;
+const getPatients = async (req, res, next) => {
+    try {
+        const patients = await patientService.getPatients();
+        res.status(200).json(patients);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getPatients = getPatients;
+const getPatientById = async (req, res, next) => {
+    try {
+        const patient = await patientService.getPatientById(req.params.id);
+        res.status(200).json(patient);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getPatientById = getPatientById;
+const updatePatient = async (req, res, next) => {
+    try {
+        const patient = await patientService.updatePatient(req.params.id, req.body);
+        res.status(200).json(patient);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.updatePatient = updatePatient;
+const deletePatient = async (req, res, next) => {
+    try {
+        await patientService.deletePatient(req.params.id);
+        res.status(204).send();
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.deletePatient = deletePatient;

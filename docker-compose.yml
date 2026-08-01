@@ -16,5 +16,22 @@ services:
       timeout: 5s
       retries: 10
 
+  mqtt:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - mqtt_data:/mosquitto/data
+      - mqtt_log:/mosquitto/log
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    healthcheck:
+      test: ["CMD", "sh", "-c", "mosquitto_sub -h localhost -p 1883 -t '$$SYS/broker/version' -C 1 -W 5 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
+  mqtt_data:
+  mqtt_log:

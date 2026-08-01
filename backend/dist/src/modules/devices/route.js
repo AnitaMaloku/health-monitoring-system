@@ -35,7 +35,12 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const deviceController = __importStar(require("./controller"));
+const validation_1 = require("./validation");
 const router = (0, express_1.Router)();
-router.post("/", deviceController.createDevice);
-router.post("/assign", deviceController.assignDeviceToPatient);
+router.post("/", validation_1.validateCreateDevice, deviceController.createDevice);
+router.get("/", deviceController.getDevices);
+router.get("/:id", deviceController.getDeviceById);
+router.patch("/:id", validation_1.validateUpdateDevice, deviceController.updateDevice);
+router.delete("/:id", deviceController.deleteDevice);
+router.post("/assign", validation_1.validateAssignDevice, deviceController.assignDeviceToPatient);
 exports.default = router;

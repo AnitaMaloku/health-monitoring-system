@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignDeviceToPatient = exports.createDevice = void 0;
+exports.assignDeviceToPatient = exports.deleteDevice = exports.updateDevice = exports.getDeviceById = exports.getDevices = exports.createDevice = void 0;
 const deviceService = __importStar(require("./service"));
 const createDevice = async (req, res, next) => {
     try {
@@ -45,6 +45,46 @@ const createDevice = async (req, res, next) => {
     }
 };
 exports.createDevice = createDevice;
+const getDevices = async (req, res, next) => {
+    try {
+        const devices = await deviceService.getDevices();
+        res.status(200).json(devices);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getDevices = getDevices;
+const getDeviceById = async (req, res, next) => {
+    try {
+        const device = await deviceService.getDeviceById(req.params.id);
+        res.status(200).json(device);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getDeviceById = getDeviceById;
+const updateDevice = async (req, res, next) => {
+    try {
+        const device = await deviceService.updateDevice(req.params.id, req.body);
+        res.status(200).json(device);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.updateDevice = updateDevice;
+const deleteDevice = async (req, res, next) => {
+    try {
+        await deviceService.deleteDevice(req.params.id);
+        res.status(204).send();
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.deleteDevice = deleteDevice;
 const assignDeviceToPatient = async (req, res, next) => {
     try {
         const assignment = await deviceService.assignDeviceToPatient(req.body);

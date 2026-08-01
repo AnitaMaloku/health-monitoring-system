@@ -7,5 +7,6 @@ export const env = {
     PORT: process.env.PORT || 3000,
     DATABASE_URL: process.env.DATABASE_URL!,
     JWT_SECRET: process.env.JWT_SECRET!,
-    MQTT_URL: process.env.MQTT_URL!
+    MQTT_URL: process.env.MQTT_URL!,
+    MQTT_TOPIC: process.env.MQTT_TOPIC || "health/measurements"
 };
