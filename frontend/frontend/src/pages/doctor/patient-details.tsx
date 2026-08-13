@@ -1,22 +1,19 @@
-import { AlertList } from '../../components/AlertList'
 import { HealthHistoryTable } from '../../components/HealthHistoryTable'
 import { StatusPill } from '../../components/StatusPill'
 import { StatusReason } from '../../components/StatusReason'
 import { VitalCards } from '../../components/VitalCards'
-import type { Alert, Patient } from '../../types'
+import type { Patient } from '../../types'
 
-type DetailTab = 'live' | 'history' | 'alerts'
+type DetailTab = 'live' | 'history'
 
 export function DoctorPatientDetailsPage({
   patient,
   tab,
   setTab,
-  alerts,
 }: {
   patient: Patient
   tab: DetailTab
   setTab: (tab: DetailTab) => void
-  alerts: Alert[]
 }) {
   return (
     <div className="page-stack">
@@ -31,7 +28,7 @@ export function DoctorPatientDetailsPage({
       </section>
 
       <div className="tabbar" role="tablist" aria-label="Patient detail tabs">
-        {(['live', 'history', 'alerts'] as const).map((item) => (
+        {(['live', 'history'] as const).map((item) => (
           <button
             className={tab === item ? 'active' : ''}
             type="button"
@@ -53,35 +50,11 @@ export function DoctorPatientDetailsPage({
         <section className="panel">
           <div className="section-heading">
             <h2>History</h2>
-            <span>Previous measurements</span>
+            <span>Last 20 measurements</span>
           </div>
-          <HealthHistoryTable />
+          <HealthHistoryTable patient={patient} />
         </section>
       )}
-
-      {tab === 'alerts' && (
-        <DoctorAlertsPage alerts={alerts} />
-      )}
     </div>
-  )
-}
-
-function DoctorAlertsPage({
-  alerts: patientAlerts,
-}: {
-  alerts: Alert[]
-}) {
-  return (
-    <section className="panel">
-      <div className="section-heading">
-        <h2>Alerts</h2>
-        <span>{patientAlerts.length} active</span>
-      </div>
-      {patientAlerts.length === 0 ? (
-        <div className="empty-state">No alerts for this patient.</div>
-      ) : (
-        <AlertList alerts={patientAlerts} />
-      )}
-    </section>
   )
 }

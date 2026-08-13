@@ -37,3 +37,8 @@ export const deletePatient = async (id: string) => {
     await getPatientById(id);
     return patientRepository.remove(id);
 };
+
+export const getMeasurementsByPatientId = async (patientId: string, limit: number = 20) => {
+    await getPatientById(patientId);
+    return patientRepository.findMeasurementsByPatientId(patientId, limit);
+};

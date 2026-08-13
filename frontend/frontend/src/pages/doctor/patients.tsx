@@ -101,6 +101,7 @@ export function DoctorPatientsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<PatientFormState>(emptyForm)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const loadPatients = async () => {
     try {
@@ -224,6 +225,11 @@ export function DoctorPatientsPage() {
     }
   }
 
+  const filteredPatients = patients.filter((patient) =>
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.bloodGroup.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   return (
     <section className="panel">
       <div className="section-heading">
@@ -234,6 +240,14 @@ export function DoctorPatientsPage() {
       </div>
 
       {error && <p className="form-error">{error}</p>}
+
+      <input
+        type="text"
+        className="search-input"
+        placeholder="Search by name or blood group..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
 
       {isFormOpen && (
         <div className="modal-overlay" onClick={resetForm}>
@@ -341,9 +355,12 @@ export function DoctorPatientsPage() {
         {!isLoading && patients.length === 0 && (
           <div className="empty-state">No patients found in the database.</div>
         )}
+        {!isLoading && patients.length > 0 && filteredPatients.length === 0 && (
+          <div className="empty-state">No patients match your search.</div>
+        )}
 
         {!isLoading &&
-          patients.map((patient) => (
+          filteredPatients.map((patient) => (
             <div className="table-row" key={patient.id}>
               <span>{patient.name}</span>
               <span>{patient.dateOfBirth}</span>

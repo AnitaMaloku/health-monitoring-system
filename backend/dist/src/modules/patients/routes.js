@@ -39,6 +39,7 @@ const validation_1 = require("./validation");
 const router = (0, express_1.Router)();
 router.post("/", validation_1.validateCreatePatient, patientController.createPatient);
 router.get("/", patientController.getPatients);
+router.get("/latest-measurements", patientController.getLatestMeasurements);
 router.get("/with-device", patientController.getPatientsWithAssignedDevice);
 router.get("/without-device", patientController.getPatientsWithoutAssignedDevice);
 router.get("/:id", patientController.getPatientById);

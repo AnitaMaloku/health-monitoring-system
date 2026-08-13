@@ -98,6 +98,7 @@ export function DoctorDevicesPage() {
   const [isLoadingPatients, setIsLoadingPatients] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isAssigning, setIsAssigning] = useState(false)
   const [isUnassigningId, setIsUnassigningId] = useState<string | null>(null)
@@ -363,6 +364,12 @@ export function DoctorDevicesPage() {
     }
   }
 
+  const filteredDevices = devices.filter((device) =>
+    device.serial.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    device.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    device.patient.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   return (
     <div className="page-stack">
       <section className="panel">
@@ -378,6 +385,14 @@ export function DoctorDevicesPage() {
         </div>
 
         {error && <p className="form-error">{error}</p>}
+
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search by serial number, type, or patient name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
         {isFormOpen && (
           <div className="modal-overlay" onClick={resetForm}>
@@ -498,7 +513,10 @@ export function DoctorDevicesPage() {
           {!isLoading && devices.length === 0 && (
             <div className="empty-state">No devices added yet.</div>
           )}
-          {!isLoading && devices.map((device) => (
+          {!isLoading && devices.length > 0 && filteredDevices.length === 0 && (
+            <div className="empty-state">No devices match your search.</div>
+          )}
+          {!isLoading && filteredDevices.map((device) => (
             <div className="table-row" key={device.id}>
               <span>{device.serial}</span>
               <span>{device.type}</span>

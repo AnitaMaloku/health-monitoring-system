@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePatient = exports.updatePatient = exports.getPatientById = exports.getPatientsWithoutAssignedDevice = exports.getPatientsWithAssignedDevice = exports.getPatients = exports.createPatient = void 0;
+exports.deletePatient = exports.updatePatient = exports.getPatientById = exports.getPatientsWithoutAssignedDevice = exports.getPatientsWithAssignedDevice = exports.getLatestMeasurements = exports.getPatients = exports.createPatient = void 0;
 const api_error_1 = require("../../utils/api-error");
 const patientRepository = __importStar(require("./repository"));
 const createPatient = async (data) => {
@@ -44,6 +44,10 @@ const getPatients = async () => {
     return patientRepository.findAll();
 };
 exports.getPatients = getPatients;
+const getLatestMeasurements = async () => {
+    return patientRepository.findLatestMeasurements();
+};
+exports.getLatestMeasurements = getLatestMeasurements;
 const getPatientsWithAssignedDevice = async () => {
     return patientRepository.findPatientsWithAssignedDevice();
 };

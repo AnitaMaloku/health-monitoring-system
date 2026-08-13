@@ -1,4 +1,4 @@
-type MetricTone = 'default' | 'normal' | 'critical'
+type MetricTone = 'default' | 'normal' | 'critical' | 'warning'
 
 export function Metric({
   label,

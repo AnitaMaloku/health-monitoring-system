@@ -92,3 +92,17 @@ export const deletePatient = async (
         next(error);
     }
 };
+
+export const getMeasurementsByPatientId = async (
+    req: Request<{ id: string }>,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+        const measurements = await patientService.getMeasurementsByPatientId(req.params.id, limit);
+        res.status(200).json(measurements);
+    } catch (error) {
+        next(error);
+    }
+};

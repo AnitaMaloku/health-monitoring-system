@@ -148,3 +148,29 @@ export const remove = (id: string) => {
         });
     });
 };
+
+export const findMeasurementsByPatientId = async (patientId: string, limit: number = 20) => {
+    return prisma.healthMeasurement.findMany({
+        where: {
+            patientDevice: {
+                patientId: patientId,
+                unassignedAt: null
+            }
+        },
+        orderBy: {
+            timestamp: "desc"
+        },
+        take: limit,
+        include: {
+            patientDevice: {
+                include: {
+                    device: {
+                        select: {
+                            serialNumber: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+};

@@ -8,6 +8,7 @@ router.post("/", validateCreatePatient, patientController.createPatient);
 router.get("/", patientController.getPatients);
 router.get("/with-device", patientController.getPatientsWithAssignedDevice);
 router.get("/without-device", patientController.getPatientsWithoutAssignedDevice);
+router.get("/:id/measurements", patientController.getMeasurementsByPatientId);
 router.get("/:id", patientController.getPatientById);
 router.patch("/:id", validateUpdatePatient, patientController.updatePatient);
 router.delete("/:id", patientController.deletePatient);

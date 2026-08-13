@@ -6,7 +6,6 @@ const database_1 = require("../../config/database");
 const env_1 = require("../../config/env");
 const socket_server_1 = require("../websocket/socket.server");
 const mqtt_client_1 = require("./mqtt.client");
-const ALERT_DEDUP_WINDOW_MS = 5 * 60 * 1000;
 const isFiniteNumber = (value) => {
     return typeof value === "number" && Number.isFinite(value);
 };
@@ -31,111 +30,6 @@ const normalizePayload = (rawPayload) => {
         return null;
     }
 };
-const buildAlertCandidates = (payload) => {
-    const candidates = [];
-    if (isFiniteNumber(payload.heartRate)) {
-        if (payload.heartRate >= 130) {
-            candidates.push({
-                metric: "heartRate",
-                level: "CRITICAL",
-                value: payload.heartRate,
-                message: `Critical heart rate: ${payload.heartRate} BPM`
-            });
-        }
-        else if (payload.heartRate >= 105) {
-            candidates.push({
-                metric: "heartRate",
-                level: "WARNING",
-                value: payload.heartRate,
-                message: `High heart rate: ${payload.heartRate} BPM`
-            });
-        }
-    }
-    if (isFiniteNumber(payload.spo2)) {
-        if (payload.spo2 <= 90) {
-            candidates.push({
-                metric: "spo2",
-                level: "CRITICAL",
-                value: payload.spo2,
-                message: `Critical oxygen saturation: ${payload.spo2}%`
-            });
-        }
-        else if (payload.spo2 <= 94) {
-            candidates.push({
-                metric: "spo2",
-                level: "WARNING",
-                value: payload.spo2,
-                message: `Low oxygen saturation: ${payload.spo2}%`
-            });
-        }
-    }
-    if (isFiniteNumber(payload.temp)) {
-        if (payload.temp >= 39) {
-            candidates.push({
-                metric: "temp",
-                level: "CRITICAL",
-                value: payload.temp,
-                message: `Critical temperature: ${payload.temp} C`
-            });
-        }
-        else if (payload.temp >= 37.8) {
-            candidates.push({
-                metric: "temp",
-                level: "WARNING",
-                value: payload.temp,
-                message: `High temperature: ${payload.temp} C`
-            });
-        }
-    }
-    if (isFiniteNumber(payload.respiratoryRate)) {
-        if (payload.respiratoryRate >= 24) {
-            candidates.push({
-                metric: "respiratoryRate",
-                level: "CRITICAL",
-                value: payload.respiratoryRate,
-                message: `Critical respiratory rate: ${payload.respiratoryRate} rpm`
-            });
-        }
-        else if (payload.respiratoryRate >= 20) {
-            candidates.push({
-                metric: "respiratoryRate",
-                level: "WARNING",
-                value: payload.respiratoryRate,
-                message: `High respiratory rate: ${payload.respiratoryRate} rpm`
-            });
-        }
-    }
-    return candidates;
-};
-const persistAlerts = async (patientId, payload) => {
-    const candidates = buildAlertCandidates(payload);
-    for (const candidate of candidates) {
-        const dedupCutoff = new Date(Date.now() - ALERT_DEDUP_WINDOW_MS);
-        const existingAlert = await database_1.prisma.alert.findFirst({
-            where: {
-                patientId,
-                metric: candidate.metric,
-                level: candidate.level,
-                resolvedAt: null,
-                createdAt: {
-                    gte: dedupCutoff
-                }
-            }
-        });
-        if (existingAlert) {
-            continue;
-        }
-        await database_1.prisma.alert.create({
-            data: {
-                patientId,
-                level: candidate.level,
-                metric: candidate.metric,
-                value: candidate.value,
-                message: candidate.message
-            }
-        });
-    }
-};
 const persistMeasurement = async (payload) => {
     const deviceId = await database_1.prisma.device.findUnique({
         where: {
@@ -156,7 +50,6 @@ const persistMeasurement = async (payload) => {
         },
         select: {
             id: true,
-            patientId: true
         }
     });
     if (!patientDeviceId) {
@@ -184,7 +77,6 @@ const persistMeasurement = async (payload) => {
         }
     });
     console.log(`[mqtt] Stored measurement for patientDeviceId=${patientDeviceId.id}`);
-    await persistAlerts(patientDeviceId.patientId, payload);
     (0, socket_server_1.emitHealthMeasurement)({
         ...measurement,
         temp: measurement.temp === null ? null : Number(measurement.temp),

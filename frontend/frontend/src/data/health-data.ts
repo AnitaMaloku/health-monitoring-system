@@ -1,4 +1,4 @@
-import type { Alert, HealthMeasurement, Patient, PatientStatus } from '../types'
+import type { HealthMeasurement, Patient, PatientStatus } from '../types'
 
 export const basePatients: Patient[] = [
   {
@@ -54,23 +54,6 @@ export const basePatients: Patient[] = [
   },
 ]
 
-export const alerts: Alert[] = [
-  {
-    level: 'critical',
-    title: 'High Heart Rate',
-    patient: 'Mike Wilson',
-    value: 'Heart Rate: 142 BPM',
-    time: '10 seconds ago',
-  },
-  {
-    level: 'warning',
-    title: 'High Temperature',
-    patient: 'Anna Brown',
-    value: 'Temperature: 37.8 C',
-    time: '2 minutes ago',
-  },
-]
-
 export const historyRows = [
   { date: '09 Aug', hr: 78, spo2: '98%', temp: '36.8', bp: '120/80', rr: 16 },
   { date: '08 Aug', hr: 82, spo2: '97%', temp: '36.7', bp: '118/78', rr: 17 },
@@ -113,11 +96,18 @@ export function mergeLatestMeasurement(
       return patient
     }
 
+    // Convert temp to number if it's a string (from Prisma Decimal)
+    let tempValue = patient.vitals.temp
+    if (latest.temp !== null && latest.temp !== undefined) {
+      const parsedTemp = typeof latest.temp === 'string' ? parseFloat(latest.temp) : latest.temp
+      tempValue = Number.isFinite(parsedTemp) ? parsedTemp : patient.vitals.temp
+    }
+
     const vitals = {
       serialNumber: latest.serialNumber ?? patient.device,
       heartRate: latest.heartRate ?? patient.vitals.heartRate,
       spo2: latest.spo2 ?? patient.vitals.spo2,
-      temp: latest.temp ?? patient.vitals.temp,
+      temp: tempValue,
       systolicPressure:
         latest.systolicPressure ?? patient.vitals.systolicPressure,
       diastolicPressure:
