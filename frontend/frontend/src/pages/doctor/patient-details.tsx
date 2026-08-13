@@ -3,8 +3,7 @@ import { HealthHistoryTable } from '../../components/HealthHistoryTable'
 import { StatusPill } from '../../components/StatusPill'
 import { StatusReason } from '../../components/StatusReason'
 import { VitalCards } from '../../components/VitalCards'
-import { alerts } from '../../data/health-data'
-import type { Patient } from '../../types'
+import type { Alert, Patient } from '../../types'
 
 type DetailTab = 'live' | 'history' | 'alerts'
 
@@ -12,10 +11,12 @@ export function DoctorPatientDetailsPage({
   patient,
   tab,
   setTab,
+  alerts,
 }: {
   patient: Patient
   tab: DetailTab
   setTab: (tab: DetailTab) => void
+  alerts: Alert[]
 }) {
   return (
     <div className="page-stack">
@@ -59,9 +60,7 @@ export function DoctorPatientDetailsPage({
       )}
 
       {tab === 'alerts' && (
-        <DoctorAlertsPage
-          alerts={alerts.filter((alert) => alert.patient === patient.name)}
-        />
+        <DoctorAlertsPage alerts={alerts} />
       )}
     </div>
   )
@@ -70,7 +69,7 @@ export function DoctorPatientDetailsPage({
 function DoctorAlertsPage({
   alerts: patientAlerts,
 }: {
-  alerts: typeof alerts
+  alerts: Alert[]
 }) {
   return (
     <section className="panel">

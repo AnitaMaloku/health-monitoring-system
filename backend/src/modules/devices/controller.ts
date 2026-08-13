@@ -78,3 +78,16 @@ export const assignDeviceToPatient = async (
         next(error);
     }
 };
+
+export const unassignDeviceFromPatient = async (
+    req: Request<{ id: string }>,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const device = await deviceService.unassignDeviceFromPatient(req.params.id);
+        res.status(200).json(device);
+    } catch (error) {
+        next(error);
+    }
+};

@@ -48,7 +48,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.RefreshTokenScalarFieldEnum = exports.HealthMeasurementScalarFieldEnum = exports.PatientDeviceScalarFieldEnum = exports.DeviceScalarFieldEnum = exports.PatientScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
+exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.AlertScalarFieldEnum = exports.HealthMeasurementScalarFieldEnum = exports.PatientDeviceScalarFieldEnum = exports.DeviceScalarFieldEnum = exports.PatientScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/index-browser"));
 exports.Decimal = runtime.Decimal;
 exports.NullTypes = {
@@ -75,12 +75,11 @@ exports.JsonNull = runtime.JsonNull;
  */
 exports.AnyNull = runtime.AnyNull;
 exports.ModelName = {
-    User: 'User',
     Patient: 'Patient',
     Device: 'Device',
     PatientDevice: 'PatientDevice',
     HealthMeasurement: 'HealthMeasurement',
-    RefreshToken: 'RefreshToken'
+    Alert: 'Alert'
 };
 /*
  * Enums
@@ -91,16 +90,8 @@ exports.TransactionIsolationLevel = runtime.makeStrictEnum({
     RepeatableRead: 'RepeatableRead',
     Serializable: 'Serializable'
 });
-exports.UserScalarFieldEnum = {
-    id: 'id',
-    email: 'email',
-    passHash: 'passHash',
-    role: 'role',
-    createdAt: 'createdAt'
-};
 exports.PatientScalarFieldEnum = {
     id: 'id',
-    userId: 'userId',
     firstName: 'firstName',
     lastName: 'lastName',
     birthDate: 'birthDate',
@@ -136,13 +127,15 @@ exports.HealthMeasurementScalarFieldEnum = {
     respiratoryRate: 'respiratoryRate',
     timestamp: 'timestamp'
 };
-exports.RefreshTokenScalarFieldEnum = {
+exports.AlertScalarFieldEnum = {
     id: 'id',
-    userId: 'userId',
-    token: 'token',
-    expiresAt: 'expiresAt',
-    revokedAt: 'revokedAt',
-    createdAt: 'createdAt'
+    patientId: 'patientId',
+    level: 'level',
+    metric: 'metric',
+    value: 'value',
+    message: 'message',
+    createdAt: 'createdAt',
+    resolvedAt: 'resolvedAt'
 };
 exports.SortOrder = {
     asc: 'asc',

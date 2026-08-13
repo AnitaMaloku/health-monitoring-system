@@ -6,7 +6,7 @@ export function DoctorPatientsHealthPage({
   onOpenPatient,
 }: {
   patients: Patient[]
-  onOpenPatient: (id: number) => void
+  onOpenPatient: (id: string | number) => void
 }) {
   return (
     <section className="panel">

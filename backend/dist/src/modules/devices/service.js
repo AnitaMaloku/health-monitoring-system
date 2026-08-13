@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignDeviceToPatient = exports.deleteDevice = exports.updateDevice = exports.getDeviceById = exports.getDevices = exports.createDevice = void 0;
+exports.unassignDeviceFromPatient = exports.assignDeviceToPatient = exports.deleteDevice = exports.updateDevice = exports.getDeviceById = exports.getDevices = exports.createDevice = void 0;
 const api_error_1 = require("../../utils/api-error");
 const patientRepository = __importStar(require("../patients/repository"));
 const deviceRepository = __importStar(require("./repository"));
@@ -59,7 +59,10 @@ const updateDevice = async (id, data) => {
 };
 exports.updateDevice = updateDevice;
 const deleteDevice = async (id) => {
-    await (0, exports.getDeviceById)(id);
+    const device = await (0, exports.getDeviceById)(id);
+    if (device.patientDevices.length > 0) {
+        throw new api_error_1.ApiError(409, "Device is assigned to a patient and cannot be deleted");
+    }
     return deviceRepository.remove(id);
 };
 exports.deleteDevice = deleteDevice;
@@ -85,3 +88,17 @@ const assignDeviceToPatient = async (data) => {
     return deviceRepository.assignToPatient(data.patientId, data.deviceId);
 };
 exports.assignDeviceToPatient = assignDeviceToPatient;
+const unassignDeviceFromPatient = async (deviceId) => {
+    const [device, deviceAssignment] = await Promise.all([
+        deviceRepository.findById(deviceId),
+        deviceRepository.findActiveAssignmentByDeviceId(deviceId)
+    ]);
+    if (!device) {
+        throw new api_error_1.ApiError(404, "Device not found");
+    }
+    if (!deviceAssignment) {
+        throw new api_error_1.ApiError(409, "Device is not currently assigned to a patient");
+    }
+    return deviceRepository.unassignFromPatient(deviceId);
+};
+exports.unassignDeviceFromPatient = unassignDeviceFromPatient;

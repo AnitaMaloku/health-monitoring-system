@@ -1,10 +1,9 @@
 import { AlertList } from '../../components/AlertList'
 import { Metric } from '../../components/Metric'
 import { PatientVitalsTable } from '../../components/PatientVitalsTable'
-import { alerts } from '../../data/health-data'
-import type { Patient } from '../../types'
+import type { Alert, Patient } from '../../types'
 
-export function DoctorDashboard({ patients }: { patients: Patient[] }) {
+export function DoctorDashboard({ patients, alerts }: { patients: Patient[]; alerts: Alert[] }) {
   const activeDevices = patients.filter((patient) => patient.device !== '-').length
   const criticalAlerts = patients.filter(
     (patient) => patient.status === 'critical',
@@ -29,7 +28,7 @@ export function DoctorDashboard({ patients }: { patients: Patient[] }) {
 
       <section className="panel">
         <div className="section-heading">
-          <h2>Recent Alerts</h2>
+          <h2>Recent Alerts (24h)</h2>
           <a href="#/doctor/alerts">View all</a>
         </div>
         <AlertList alerts={alerts} />

@@ -13,6 +13,8 @@ type BackendPatient = {
 type PatientRow = {
   id: string
   name: string
+  birthDate: string
+  dateOfBirth: string
   age: number | string
   gender: string
   bloodGroup: string
@@ -22,18 +24,16 @@ type PatientRow = {
 type PatientFormState = {
   firstName: string
   lastName: string
-  email: string
   birthDate: string
   gender: string
   bloodGroup: string
 }
 
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3010'
+const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3003'
 
 const emptyForm: PatientFormState = {
   firstName: '',
   lastName: '',
-  email: '',
   birthDate: '',
   gender: 'MALE',
   bloodGroup: 'O+',
@@ -75,6 +75,8 @@ function mapPatient(patient: BackendPatient): PatientRow {
     name:
       `${patient.firstName ?? ''} ${patient.lastName ?? ''}`.trim() ||
       'Unknown patient',
+    birthDate: patient.birthDate ?? '',
+    dateOfBirth: formatDate(patient.birthDate),
     age: calculateAge(patient.birthDate),
     gender: patient.gender || '—',
     bloodGroup: patient.bloodGroup || '—',
@@ -147,8 +149,7 @@ export function DoctorPatientsPage() {
     setFormData({
       firstName: patient.name.split(' ')[0] ?? '',
       lastName: patient.name.split(' ').slice(1).join(' ') ?? '',
-      email: '',
-      birthDate: '',
+      birthDate: patient.birthDate || '',
       gender: patient.gender === '—' ? 'MALE' : patient.gender,
       bloodGroup: patient.bloodGroup === '—' ? 'O+' : patient.bloodGroup,
     })
@@ -162,17 +163,11 @@ export function DoctorPatientsPage() {
       return
     }
 
-    if (!editingId && !formData.email.trim()) {
-      setError('Email is required to create a patient.')
-      return
-    }
-
     setIsSaving(true)
     setError('')
 
     try {
       const payload = {
-        email: formData.email.trim(),
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         birthDate: formData.birthDate || undefined,
@@ -274,20 +269,6 @@ export function DoctorPatientsPage() {
                   />
                 </label>
 
-                {!editingId && (
-                  <label>
-                    Email
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(event) =>
-                        setFormData((current) => ({ ...current, email: event.target.value }))
-                      }
-                      placeholder="john@example.com"
-                    />
-                  </label>
-                )}
-
                 <label>
                   Birth date
                   <input
@@ -349,6 +330,7 @@ export function DoctorPatientsPage() {
       <div className="data-table patient-table">
         <div className="table-row table-head">
           <span>Name</span>
+          <span>Date of Birth</span>
           <span>Age</span>
           <span>Gender</span>
           <span>Blood Group</span>
@@ -364,6 +346,7 @@ export function DoctorPatientsPage() {
           patients.map((patient) => (
             <div className="table-row" key={patient.id}>
               <span>{patient.name}</span>
+              <span>{patient.dateOfBirth}</span>
               <span>{patient.age}</span>
               <span>{patient.gender}</span>
               <span>{patient.bloodGroup}</span>

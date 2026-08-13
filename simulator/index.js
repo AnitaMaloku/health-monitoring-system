@@ -22,7 +22,7 @@ const buildMeasurement = () => {
   const now = new Date().toISOString();
 
   return {
-    serialNumber: "SIM-1001",
+    serialNumber: "SIM-1002",
     heartRate: randomInteger(62, 108),
     spo2: randomInteger(94, 100),
     temp: randomDecimal(36.2, 38.0, 1),

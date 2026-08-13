@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignToPatient = exports.findActiveAssignmentByPatientId = exports.findActiveAssignmentByDeviceId = exports.remove = exports.update = exports.findById = exports.findAll = exports.create = void 0;
+exports.unassignFromPatient = exports.assignToPatient = exports.findActiveAssignmentByPatientId = exports.findActiveAssignmentByDeviceId = exports.remove = exports.update = exports.findById = exports.findAll = exports.create = void 0;
 const client_1 = require("../../generated/prisma/client");
 const database_1 = require("../../config/database");
 const create = (data) => {
@@ -106,3 +106,23 @@ const assignToPatient = (patientId, deviceId) => {
     });
 };
 exports.assignToPatient = assignToPatient;
+const unassignFromPatient = (deviceId) => {
+    return database_1.prisma.$transaction(async (tx) => {
+        await tx.patientDevice.updateMany({
+            where: {
+                deviceId,
+                unassignedAt: null
+            },
+            data: {
+                unassignedAt: new Date()
+            }
+        });
+        return tx.device.update({
+            where: { id: deviceId },
+            data: {
+                status: client_1.DeviceStatus.INACTIVE
+            }
+        });
+    });
+};
+exports.unassignFromPatient = unassignFromPatient;

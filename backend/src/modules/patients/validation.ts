@@ -11,7 +11,6 @@ export const validateCreatePatient = (
     next: NextFunction
 ) => {
     const {
-        email,
         firstName,
         lastName,
         birthDate,
@@ -19,11 +18,11 @@ export const validateCreatePatient = (
         bloodGroup
     } = req.body;
 
-    if (!email || !firstName || !lastName) {
+    if (!firstName || !lastName) {
         next(
             new ApiError(
                 400,
-                "email, firstName and lastName are required"
+                "firstName and lastName are required"
             )
         );
         return;

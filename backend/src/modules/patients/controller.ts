@@ -41,6 +41,19 @@ export const getPatientsWithAssignedDevice = async (
     }
 };
 
+export const getPatientsWithoutAssignedDevice = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const patients = await patientService.getPatientsWithoutAssignedDevice();
+        res.status(200).json(patients);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getPatientById = async (
     req: Request<{ id: string }>,
     res: Response,

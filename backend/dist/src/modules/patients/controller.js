@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePatient = exports.updatePatient = exports.getPatientById = exports.getPatientsWithAssignedDevice = exports.getPatients = exports.createPatient = void 0;
+exports.deletePatient = exports.updatePatient = exports.getPatientById = exports.getPatientsWithoutAssignedDevice = exports.getPatientsWithAssignedDevice = exports.getPatients = exports.createPatient = void 0;
 const patientService = __importStar(require("./service"));
 const createPatient = async (req, res, next) => {
     try {
@@ -66,6 +66,16 @@ const getPatientsWithAssignedDevice = async (req, res, next) => {
     }
 };
 exports.getPatientsWithAssignedDevice = getPatientsWithAssignedDevice;
+const getPatientsWithoutAssignedDevice = async (req, res, next) => {
+    try {
+        const patients = await patientService.getPatientsWithoutAssignedDevice();
+        res.status(200).json(patients);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getPatientsWithoutAssignedDevice = getPatientsWithoutAssignedDevice;
 const getPatientById = async (req, res, next) => {
     try {
         const patient = await patientService.getPatientById(req.params.id);

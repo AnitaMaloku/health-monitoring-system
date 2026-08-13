@@ -390,7 +390,7 @@
 }
 
 .patient-table .table-row {
-  grid-template-columns: 1.3fr 0.45fr 0.8fr 0.8fr 0.6fr;
+  grid-template-columns: minmax(140px, 1.6fr) minmax(120px, 1fr) minmax(70px, 0.8fr) minmax(100px, 0.9fr) minmax(110px, 0.9fr) minmax(120px, 0.8fr);
 }
 
 .device-table .table-row {
@@ -692,10 +692,13 @@ button:hover {
   }
 
   .doctor-table .table-row,
-  .patient-table .table-row,
   .device-table .table-row,
   .history-table .table-row {
     min-width: 720px;
+  }
+
+  .patient-table .table-row {
+    min-width: 760px;
   }
 }
 
@@ -726,6 +729,24 @@ button:hover {
 
   .tabbar button {
     flex: 1;
+  }
+
+  .patient-table .table-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+  }
+
+  .patient-table .table-row span {
+    white-space: normal;
+  }
+
+  .patient-table .table-row > span:nth-child(1),
+  .patient-table .table-row > span:nth-child(6) {
+    grid-column: 1 / -1;
+  }
+
+  .patient-table .table-row .actions {
+    justify-content: flex-start;
   }
 
   .alert span {

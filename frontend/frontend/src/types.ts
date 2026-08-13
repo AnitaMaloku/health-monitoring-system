@@ -5,7 +5,6 @@ export type Route =
   | '/doctor/patient-details'
   | '/doctor/devices'
   | '/doctor/alerts'
-  | '/patient/dashboard'
 
 export type HealthMeasurement = {
   id?: number
@@ -33,18 +32,25 @@ export type PatientVitals = {
 }
 
 export type Patient = {
-  id: number
+  id: string | number
   name: string
   age: number
   device: string
   status: PatientStatus
+  hasLiveData: boolean
   vitals: PatientVitals
 }
 
 export type Alert = {
+  id?: string
+  patientId?: string
   level: 'warning' | 'critical'
-  title: string
-  patient: string
-  value: string
-  time: string
+  title?: string
+  patient?: string
+  metric?: string
+  value?: string | number
+  message?: string
+  time?: string
+  createdAt?: string
+  resolvedAt?: string | null
 }

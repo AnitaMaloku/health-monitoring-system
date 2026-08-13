@@ -106,3 +106,24 @@ export const assignToPatient = (patientId: string, deviceId: string) => {
         return assignment;
     });
 };
+
+export const unassignFromPatient = (deviceId: string) => {
+    return prisma.$transaction(async (tx) => {
+        await tx.patientDevice.updateMany({
+            where: {
+                deviceId,
+                unassignedAt: null
+            },
+            data: {
+                unassignedAt: new Date()
+            }
+        });
+
+        return tx.device.update({
+            where: { id: deviceId },
+            data: {
+                status: DeviceStatus.INACTIVE
+            }
+        });
+    });
+};

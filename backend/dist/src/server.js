@@ -10,6 +10,7 @@ const mqtt_handler_1 = require("./infra/mqtt/mqtt.handler");
 const socket_server_1 = require("./infra/websocket/socket.server");
 const route_1 = __importDefault(require("./modules/devices/route"));
 const routes_1 = __importDefault(require("./modules/patients/routes"));
+const route_2 = __importDefault(require("./modules/alerts/route"));
 const api_error_1 = require("./utils/api-error");
 const app = (0, express_1.default)();
 app.use((req, res, next) => {
@@ -25,6 +26,7 @@ app.use((req, res, next) => {
 app.use(express_1.default.json());
 app.use("/patients", routes_1.default);
 app.use("/devices", route_1.default);
+app.use("/alerts", route_2.default);
 app.get("/", (req, res) => {
     res.json({
         message: "Health Monitoring API running"
@@ -39,7 +41,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: "Internal server error" });
 });
 (0, mqtt_handler_1.startMqttHealthIngest)();
-const PORT = Number(process.env.PORT || 3002);
+const PORT = Number(process.env.PORT || 3003);
 const httpServer = (0, http_1.createServer)(app);
 (0, socket_server_1.initializeSocket)(httpServer);
 httpServer.listen(PORT, () => {

@@ -6,9 +6,9 @@ const isValidDate = (value) => {
     return typeof value === "string" && !Number.isNaN(new Date(value).getTime());
 };
 const validateCreatePatient = (req, res, next) => {
-    const { email, firstName, lastName, birthDate, gender, bloodGroup } = req.body;
-    if (!email || !firstName || !lastName) {
-        next(new api_error_1.ApiError(400, "email, firstName and lastName are required"));
+    const { firstName, lastName, birthDate, gender, bloodGroup } = req.body;
+    if (!firstName || !lastName) {
+        next(new api_error_1.ApiError(400, "firstName and lastName are required"));
         return;
     }
     if (birthDate !== undefined && !isValidDate(birthDate)) {

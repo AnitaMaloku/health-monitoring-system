@@ -27,7 +27,12 @@ export const updateDevice = async (id: string, data: UpdateDeviceDto) => {
 };
 
 export const deleteDevice = async (id: string) => {
-    await getDeviceById(id);
+    const device = await getDeviceById(id);
+
+    if (device.patientDevices.length > 0) {
+        throw new ApiError(409, "Device is assigned to a patient and cannot be deleted");
+    }
+
     return deviceRepository.remove(id);
 };
 
@@ -56,4 +61,21 @@ export const assignDeviceToPatient = async (data: AssignDeviceDto) => {
     }
 
     return deviceRepository.assignToPatient(data.patientId, data.deviceId);
+};
+
+export const unassignDeviceFromPatient = async (deviceId: string) => {
+    const [device, deviceAssignment] = await Promise.all([
+        deviceRepository.findById(deviceId),
+        deviceRepository.findActiveAssignmentByDeviceId(deviceId)
+    ]);
+
+    if (!device) {
+        throw new ApiError(404, "Device not found");
+    }
+
+    if (!deviceAssignment) {
+        throw new ApiError(409, "Device is not currently assigned to a patient");
+    }
+
+    return deviceRepository.unassignFromPatient(deviceId);
 };

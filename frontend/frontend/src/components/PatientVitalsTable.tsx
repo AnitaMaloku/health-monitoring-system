@@ -23,12 +23,12 @@ export function PatientVitalsTable({
       {patients.map((patient) => (
         <div className="table-row" key={patient.id}>
           <span>{patient.name}</span>
-          <span>{patient.vitals.heartRate}</span>
-          <span>{patient.vitals.spo2}%</span>
-          <span>{patient.vitals.temp}</span>
+          <span>{patient.hasLiveData ? patient.vitals.heartRate : '--'}</span>
+          <span>{patient.hasLiveData ? `${patient.vitals.spo2}%` : '--'}</span>
+          <span>{patient.hasLiveData ? patient.vitals.temp : '--'}</span>
           <span>
             <StatusPill status={patient.status} />
-            {showStatusReason && patient.status !== 'normal' && (
+            {showStatusReason && (patient.status !== 'normal' || !patient.hasLiveData) && (
               <StatusReason patient={patient} compact />
             )}
           </span>

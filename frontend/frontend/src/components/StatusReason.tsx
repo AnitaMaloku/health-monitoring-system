@@ -1,6 +1,10 @@
 import type { Patient } from '../types'
 
 export function getStatusReason(patient: Patient) {
+  if (!patient.hasLiveData) {
+    return 'No live measurements available yet.'
+  }
+
   const reasons = []
 
   if (patient.vitals.heartRate >= 130) {

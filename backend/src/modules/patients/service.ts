@@ -14,6 +14,10 @@ export const getPatientsWithAssignedDevice = async () => {
     return patientRepository.findPatientsWithAssignedDevice();
 };
 
+export const getPatientsWithoutAssignedDevice = async () => {
+    return patientRepository.findPatientsWithoutAssignedDevice();
+};
+
 export const getPatientById = async (id: string) => {
     const patient = await patientRepository.findById(id);
 

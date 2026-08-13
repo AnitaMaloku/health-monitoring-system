@@ -7,6 +7,7 @@ export const basePatients: Patient[] = [
     age: 45,
     device: 'DEV-001',
     status: 'normal',
+    hasLiveData: true,
     vitals: {
       serialNumber: 'DEV-001',
       heartRate: 78,
@@ -23,6 +24,7 @@ export const basePatients: Patient[] = [
     age: 62,
     device: 'DEV-002',
     status: 'warning',
+    hasLiveData: true,
     vitals: {
       serialNumber: 'DEV-002',
       heartRate: 115,
@@ -39,6 +41,7 @@ export const basePatients: Patient[] = [
     age: 71,
     device: 'DEV-003',
     status: 'critical',
+    hasLiveData: true,
     vitals: {
       serialNumber: 'DEV-003',
       heartRate: 142,
@@ -125,6 +128,7 @@ export function mergeLatestMeasurement(
     return {
       ...patient,
       device: vitals.serialNumber,
+      hasLiveData: true,
       vitals,
       status: classifyVitals(vitals),
     }

@@ -5,6 +5,7 @@ import { startMqttHealthIngest } from "./infra/mqtt/mqtt.handler";
 import { initializeSocket } from "./infra/websocket/socket.server";
 import deviceRoutes from "./modules/devices/route";
 import patientRoutes from "./modules/patients/routes";
+import alertRoutes from "./modules/alerts/route";
 import { ApiError } from "./utils/api-error";
 
 
@@ -27,6 +28,7 @@ app.use(express.json());
 
 app.use("/patients", patientRoutes);
 app.use("/devices", deviceRoutes);
+app.use("/alerts", alertRoutes);
 
 app.get("/", (req: Request, res: Response) => {
     res.json({
@@ -47,7 +49,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 startMqttHealthIngest();
 
 
-const PORT = Number(process.env.PORT || 3002);
+const PORT = Number(process.env.PORT || 3003);
 const httpServer = createServer(app);
 
 initializeSocket(httpServer);

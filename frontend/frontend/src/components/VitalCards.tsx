@@ -29,36 +29,42 @@ function vitalTone(label: string, value: number) {
 }
 
 export function VitalCards({ patient }: { patient: Patient }) {
+  const hasLiveData = patient.hasLiveData
+
   const vitals = [
     {
       label: 'Heart Rate',
-      value: patient.vitals.heartRate,
+      value: hasLiveData ? patient.vitals.heartRate : undefined,
       unit: 'BPM',
-      tone: vitalTone('Heart Rate', patient.vitals.heartRate),
+      tone: hasLiveData ? vitalTone('Heart Rate', patient.vitals.heartRate) : 'normal',
     },
     {
       label: 'SpO2',
-      value: patient.vitals.spo2,
+      value: hasLiveData ? patient.vitals.spo2 : undefined,
       unit: '%',
-      tone: vitalTone('SpO2', patient.vitals.spo2),
+      tone: hasLiveData ? vitalTone('SpO2', patient.vitals.spo2) : 'normal',
     },
     {
       label: 'Temperature',
-      value: patient.vitals.temp,
+      value: hasLiveData ? patient.vitals.temp : undefined,
       unit: 'C',
-      tone: vitalTone('Temperature', patient.vitals.temp),
+      tone: hasLiveData ? vitalTone('Temperature', patient.vitals.temp) : 'normal',
     },
     {
       label: 'Blood Pressure',
-      value: `${patient.vitals.systolicPressure} / ${patient.vitals.diastolicPressure}`,
+      value: hasLiveData
+        ? `${patient.vitals.systolicPressure} / ${patient.vitals.diastolicPressure}`
+        : undefined,
       unit: 'mmHg',
       tone: 'normal',
     },
     {
       label: 'Respiratory Rate',
-      value: patient.vitals.respiratoryRate,
+      value: hasLiveData ? patient.vitals.respiratoryRate : undefined,
       unit: 'breaths/min',
-      tone: vitalTone('Respiratory Rate', patient.vitals.respiratoryRate),
+      tone: hasLiveData
+        ? vitalTone('Respiratory Rate', patient.vitals.respiratoryRate)
+        : 'normal',
     },
   ]
 

@@ -1,5 +1,4 @@
 export interface CreatePatientDto {
-    email: string;
     firstName: string;
     lastName: string;
     birthDate?: string;
@@ -7,4 +6,4 @@ export interface CreatePatientDto {
     bloodGroup?: string;
 }
 
-export type UpdatePatientDto = Partial<Omit<CreatePatientDto, "userId">>;
+export type UpdatePatientDto = Partial<CreatePatientDto>;

@@ -33,15 +33,45 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const patientController = __importStar(require("./controller"));
-const validation_1 = require("./validation");
-const router = (0, express_1.Router)();
-router.post("/", validation_1.validateCreatePatient, patientController.createPatient);
-router.get("/", patientController.getPatients);
-router.get("/with-device", patientController.getPatientsWithAssignedDevice);
-router.get("/without-device", patientController.getPatientsWithoutAssignedDevice);
-router.get("/:id", patientController.getPatientById);
-router.patch("/:id", validation_1.validateUpdatePatient, patientController.updatePatient);
-router.delete("/:id", patientController.deletePatient);
-exports.default = router;
+exports.resolveAlert = exports.getAlertsByPatientId = exports.getAlerts = exports.createAlert = void 0;
+const alertService = __importStar(require("./service"));
+const createAlert = async (req, res, next) => {
+    try {
+        const alert = await alertService.createAlert(req.body);
+        res.status(201).json(alert);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.createAlert = createAlert;
+const getAlerts = async (req, res, next) => {
+    try {
+        const alerts = await alertService.getAlerts();
+        res.status(200).json(alerts);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getAlerts = getAlerts;
+const getAlertsByPatientId = async (req, res, next) => {
+    try {
+        const alerts = await alertService.getAlertsByPatientId(req.params.patientId);
+        res.status(200).json(alerts);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getAlertsByPatientId = getAlertsByPatientId;
+const resolveAlert = async (req, res, next) => {
+    try {
+        const alert = await alertService.resolveAlert(req.params.id);
+        res.status(200).json(alert);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.resolveAlert = resolveAlert;
