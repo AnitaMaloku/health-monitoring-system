@@ -6,6 +6,7 @@ const router = Router();
 
 router.post("/", validateCreatePatient, patientController.createPatient);
 router.get("/", patientController.getPatients);
+router.get("/with-device", patientController.getPatientsWithAssignedDevice);
 router.get("/:id", patientController.getPatientById);
 router.patch("/:id", validateUpdatePatient, patientController.updatePatient);
 router.delete("/:id", patientController.deletePatient);

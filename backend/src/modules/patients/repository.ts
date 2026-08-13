@@ -6,6 +6,17 @@ const generateTemporaryPassword = () => {
     return Math.random().toString(36).slice(-8);
 };
 
+const basicPatientSelect = {
+    id: true,
+    firstName: true,
+    lastName: true,
+    birthDate: true,
+    gender: true,
+    bloodGroup: true,
+    createdAt: true,
+    updatedAt: true
+} as const;
+
 export const create = async (data: CreatePatientDto) => {
     const temporaryPassword = generateTemporaryPassword();
 
@@ -60,28 +71,30 @@ export const create = async (data: CreatePatientDto) => {
 
 export const findAll = () => {
     return prisma.patient.findMany({
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    email: true,
-                    role: true
-                }
-            },
-            patientDevices: {
-                where: {
-                    unassignedAt: null
-                },
-                include: {
-                    device: true
-                }
-            }
-        },
+        select: basicPatientSelect,
         orderBy: {
             createdAt: "desc"
         }
     });
 };
+
+export const findPatientsWithAssignedDevice = () => {
+    return prisma.patient.findMany({
+        where: {
+            patientDevices: {
+                some: {
+                    unassignedAt: null
+                }
+            }
+        },
+        select: basicPatientSelect,
+        orderBy: {
+            createdAt: "desc"
+        }
+    });
+};
+
+
 
 export const findById = (id: string) => {
     return prisma.patient.findUnique({

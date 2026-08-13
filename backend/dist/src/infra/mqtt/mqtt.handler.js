@@ -4,6 +4,7 @@ exports.startMqttHealthIngest = void 0;
 const client_1 = require("@prisma/client/runtime/client");
 const database_1 = require("../../config/database");
 const env_1 = require("../../config/env");
+const socket_server_1 = require("../websocket/socket.server");
 const mqtt_client_1 = require("./mqtt.client");
 const isFiniteNumber = (value) => {
     return typeof value === "number" && Number.isFinite(value);
@@ -55,7 +56,7 @@ const persistMeasurement = async (payload) => {
         console.warn(`[mqtt] Unknown patientDevice for serialNumber ${payload.serialNumber}`);
         return;
     }
-    await database_1.prisma.healthMeasurement.create({
+    const measurement = await database_1.prisma.healthMeasurement.create({
         data: {
             patientDeviceId: patientDeviceId.id,
             heartRate: payload.heartRate,
@@ -76,6 +77,11 @@ const persistMeasurement = async (payload) => {
         }
     });
     console.log(`[mqtt] Stored measurement for patientDeviceId=${patientDeviceId.id}`);
+    (0, socket_server_1.emitHealthMeasurement)({
+        ...measurement,
+        temp: measurement.temp === null ? null : Number(measurement.temp),
+        serialNumber: payload.serialNumber
+    });
 };
 const startMqttHealthIngest = () => {
     const client = (0, mqtt_client_1.createMqttClient)();

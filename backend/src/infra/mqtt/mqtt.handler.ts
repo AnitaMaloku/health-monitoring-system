@@ -2,6 +2,7 @@ import { Decimal } from "@prisma/client/runtime/client";
 
 import { prisma } from "../../config/database";
 import { env } from "../../config/env";
+import { emitHealthMeasurement } from "../websocket/socket.server";
 import { createMqttClient } from "./mqtt.client";
 
 type HealthMeasurementPayload = {
@@ -71,7 +72,7 @@ const persistMeasurement = async (payload: HealthMeasurementPayload) => {
 		return;
 	}
 
-	await prisma.healthMeasurement.create({
+	const measurement = await prisma.healthMeasurement.create({
 		data: {
 			patientDeviceId: patientDeviceId.id,
 			heartRate: payload.heartRate,
@@ -94,6 +95,11 @@ const persistMeasurement = async (payload: HealthMeasurementPayload) => {
 	});
 
 	console.log(`[mqtt] Stored measurement for patientDeviceId=${patientDeviceId.id}`);
+	emitHealthMeasurement({
+		...measurement,
+		temp: measurement.temp === null ? null : Number(measurement.temp),
+		serialNumber: payload.serialNumber
+	});
 };
 
 export const startMqttHealthIngest = () => {

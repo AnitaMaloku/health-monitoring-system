@@ -10,6 +10,10 @@ export const getPatients = async () => {
     return patientRepository.findAll();
 };
 
+export const getPatientsWithAssignedDevice = async () => {
+    return patientRepository.findPatientsWithAssignedDevice();
+};
+
 export const getPatientById = async (id: string) => {
     const patient = await patientRepository.findById(id);
 
