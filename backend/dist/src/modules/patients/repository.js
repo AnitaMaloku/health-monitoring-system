@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.remove = exports.update = exports.findById = exports.findLatestMeasurements = exports.findPatientsWithoutAssignedDevice = exports.findPatientsWithAssignedDevice = exports.findAll = exports.create = void 0;
+exports.findMeasurementsByPatientId = exports.remove = exports.update = exports.findById = exports.findPatientsWithoutAssignedDevice = exports.findPatientsWithAssignedDevice = exports.findAll = exports.create = void 0;
 const database_1 = require("../../config/database");
 const basicPatientSelect = {
     id: true,
@@ -87,35 +87,6 @@ const findPatientsWithoutAssignedDevice = () => {
     });
 };
 exports.findPatientsWithoutAssignedDevice = findPatientsWithoutAssignedDevice;
-const findLatestMeasurements = async () => {
-    const measurements = await database_1.prisma.healthMeasurement.findMany({
-        distinct: ['patientDeviceId'],
-        orderBy: {
-            timestamp: 'desc'
-        },
-        include: {
-            patientDevice: {
-                include: {
-                    patient: true,
-                    device: true
-                }
-            }
-        }
-    });
-    return measurements.map((m) => ({
-        id: m.id,
-        serialNumber: m.patientDevice.device.serialNumber,
-        patientDeviceId: m.patientDeviceId,
-        heartRate: m.heartRate,
-        spo2: m.spo2,
-        temp: m.temp ? Number(m.temp) : null,
-        systolicPressure: m.systolicPressure,
-        diastolicPressure: m.diastolicPressure,
-        respiratoryRate: m.respiratoryRate,
-        timestamp: m.timestamp
-    }));
-};
-exports.findLatestMeasurements = findLatestMeasurements;
 const findById = (id) => {
     return database_1.prisma.patient.findUnique({
         where: { id },
@@ -174,3 +145,29 @@ const remove = (id) => {
     });
 };
 exports.remove = remove;
+const findMeasurementsByPatientId = async (patientId, limit = 20) => {
+    return database_1.prisma.healthMeasurement.findMany({
+        where: {
+            patientDevice: {
+                patientId: patientId,
+                unassignedAt: null
+            }
+        },
+        orderBy: {
+            timestamp: "desc"
+        },
+        take: limit,
+        include: {
+            patientDevice: {
+                include: {
+                    device: {
+                        select: {
+                            serialNumber: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+};
+exports.findMeasurementsByPatientId = findMeasurementsByPatientId;

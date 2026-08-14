@@ -20,10 +20,7 @@ enum DeviceStatus {
   RETIRED       // permanently decommissioned, no longer usable
 }
 
-enum AlertLevel {
-  WARNING
-  CRITICAL
-}
+
 
 model Patient {
   id          String    @id @default(uuid()) @db.Uuid
@@ -36,7 +33,6 @@ model Patient {
   updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
 
   patientDevices PatientDevice[]
-  alerts        Alert[]
 
 }
 
@@ -84,23 +80,5 @@ model HealthMeasurement {
 
   @@index([patientDeviceId])
   @@index([timestamp])
-}
-
-model Alert {
-  id        String     @id @default(uuid()) @db.Uuid
-  patientId String     @db.Uuid
-  level     AlertLevel
-  metric    String?
-  value     Decimal?   @db.Decimal(10, 2)
-  message   String?
-  createdAt DateTime   @default(now()) @db.Timestamptz(3)
-  resolvedAt DateTime? @db.Timestamptz(3)
-
-  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-
-  @@index([patientId])
-  @@index([level])
-  @@index([createdAt])
-  @@map("Alerts")
 }
 

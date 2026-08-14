@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePatient = exports.updatePatient = exports.getPatientById = exports.getPatientsWithoutAssignedDevice = exports.getPatientsWithAssignedDevice = exports.getLatestMeasurements = exports.getPatients = exports.createPatient = void 0;
+exports.getMeasurementsByPatientId = exports.deletePatient = exports.updatePatient = exports.getPatientById = exports.getPatientsWithoutAssignedDevice = exports.getPatientsWithAssignedDevice = exports.getPatients = exports.createPatient = void 0;
 const api_error_1 = require("../../utils/api-error");
 const patientRepository = __importStar(require("./repository"));
 const createPatient = async (data) => {
@@ -44,10 +44,6 @@ const getPatients = async () => {
     return patientRepository.findAll();
 };
 exports.getPatients = getPatients;
-const getLatestMeasurements = async () => {
-    return patientRepository.findLatestMeasurements();
-};
-exports.getLatestMeasurements = getLatestMeasurements;
 const getPatientsWithAssignedDevice = async () => {
     return patientRepository.findPatientsWithAssignedDevice();
 };
@@ -74,3 +70,8 @@ const deletePatient = async (id) => {
     return patientRepository.remove(id);
 };
 exports.deletePatient = deletePatient;
+const getMeasurementsByPatientId = async (patientId, limit = 20) => {
+    await (0, exports.getPatientById)(patientId);
+    return patientRepository.findMeasurementsByPatientId(patientId, limit);
+};
+exports.getMeasurementsByPatientId = getMeasurementsByPatientId;

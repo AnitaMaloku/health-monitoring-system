@@ -15,6 +15,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - health-network
 
   mqtt:
     image: eclipse-mosquitto:2
@@ -30,8 +32,49 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - health-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://health:password@db:5432/health_monitoring?schema=public
+      MQTT_URL: mqtt://mqtt:1883
+      PORT: 3003
+      NODE_ENV: production
+    ports:
+      - "3003:3003"
+    depends_on:
+      db:
+        condition: service_healthy
+      mqtt:
+        condition: service_healthy
+    networks:
+      - health-network
+
+  frontend:
+    build:
+      context: ./frontend/frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    environment:
+      VITE_API_URL: http://localhost:3003
+      VITE_SOCKET_URL: http://localhost:3003
+    depends_on:
+      - backend
+    networks:
+      - health-network
 
 volumes:
   postgres_data:
   mqtt_data:
   mqtt_log:
+
+networks:
+  health-network:
+    driver: bridge

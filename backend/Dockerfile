@@ -10,9 +10,12 @@ COPY prisma.config.ts ./
 COPY prisma ./prisma
 COPY src ./src
 
+# Generate Prisma client
 RUN npx prisma generate
+
+# Build TypeScript
 RUN npm run build
 
 EXPOSE 3000
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/src/server.js"]

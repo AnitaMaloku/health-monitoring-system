@@ -6,8 +6,8 @@ function formatValue(value: string | number | null | undefined) {
 
 function vitalTone(label: string, value: number) {
   if (label === 'Heart Rate') {
-    if (value >= 130) return 'critical'
-    if (value >= 105) return 'warning'
+    if (value >= 130 || value <= 40) return 'critical'
+    if (value >= 105 || value <= 60) return 'warning'
   }
 
   if (label === 'SpO2') {
@@ -16,15 +16,27 @@ function vitalTone(label: string, value: number) {
   }
 
   if (label === 'Temperature') {
-    if (value >= 39) return 'critical'
-    if (value >= 37.8) return 'warning'
+    if (value >= 39 || value <= 35) return 'critical'
+    if (value >= 37.8 || value <= 36) return 'warning'
   }
 
   if (label === 'Respiratory Rate') {
-    if (value >= 24) return 'critical'
-    if (value >= 20) return 'warning'
+    if (value >= 24 || value <= 8) return 'critical'
+    if (value >= 20 || value <= 12) return 'warning'
   }
 
+  return 'normal'
+}
+
+// Blood pressure needs its own helper since it's two values (systolic/diastolic)
+// combined into one card, unlike the other single-value vitals above.
+function bloodPressureTone(systolic: number, diastolic: number) {
+  if (systolic >= 180 || systolic <= 90 || diastolic >= 120 || diastolic <= 50) {
+    return 'critical'
+  }
+  if (systolic >= 140 || systolic <= 100 || diastolic >= 90 || diastolic <= 60) {
+    return 'warning'
+  }
   return 'normal'
 }
 
@@ -56,7 +68,9 @@ export function VitalCards({ patient }: { patient: Patient }) {
         ? `${patient.vitals.systolicPressure} / ${patient.vitals.diastolicPressure}`
         : undefined,
       unit: 'mmHg',
-      tone: 'normal',
+      tone: hasLiveData
+        ? bloodPressureTone(patient.vitals.systolicPressure, patient.vitals.diastolicPressure)
+        : 'normal',
     },
     {
       label: 'Respiratory Rate',
