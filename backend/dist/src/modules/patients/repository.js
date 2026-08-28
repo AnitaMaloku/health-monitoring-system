@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findMeasurementsByPatientId = exports.remove = exports.update = exports.findById = exports.findPatientsWithoutAssignedDevice = exports.findPatientsWithAssignedDevice = exports.findAll = exports.create = void 0;
+exports.findMeasurementsByPatientId = exports.remove = exports.update = exports.findDoctorByUserId = exports.findDoctorById = exports.findById = exports.findPatientsWithoutAssignedDevice = exports.findPatientsWithAssignedDevice = exports.findAll = exports.create = void 0;
 const database_1 = require("../../config/database");
 const basicPatientSelect = {
     id: true,
@@ -9,6 +9,12 @@ const basicPatientSelect = {
     birthDate: true,
     gender: true,
     bloodGroup: true,
+    doctor: {
+        select: {
+            id: true,
+            user: { select: { firstName: true, lastName: true } }
+        }
+    },
     createdAt: true,
     updatedAt: true,
     patientDevices: {
@@ -18,22 +24,28 @@ const basicPatientSelect = {
         select: {
             device: {
                 select: {
-                    serialNumber: true
+                    id: true,
+                    serialNumber: true,
+                    deviceType: true,
+                    status: true
                 }
             }
         }
     }
 };
-const create = async (data) => {
+const create = async (data, createdById) => {
     return database_1.prisma.patient.create({
         data: {
             firstName: data.firstName,
             lastName: data.lastName,
             birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
             gender: data.gender,
-            bloodGroup: data.bloodGroup
+            bloodGroup: data.bloodGroup,
+            doctorId: data.doctorId,
+            createdById
         },
         include: {
+            doctor: { include: { user: true } },
             patientDevices: {
                 where: {
                     unassignedAt: null
@@ -46,8 +58,9 @@ const create = async (data) => {
     });
 };
 exports.create = create;
-const findAll = () => {
+const findAll = (doctorUserId) => {
     return database_1.prisma.patient.findMany({
+        where: doctorUserId ? { doctor: { userId: doctorUserId } } : undefined,
         select: basicPatientSelect,
         orderBy: {
             createdAt: "desc"
@@ -55,9 +68,10 @@ const findAll = () => {
     });
 };
 exports.findAll = findAll;
-const findPatientsWithAssignedDevice = () => {
+const findPatientsWithAssignedDevice = (doctorUserId) => {
     return database_1.prisma.patient.findMany({
         where: {
+            ...(doctorUserId ? { doctor: { userId: doctorUserId } } : {}),
             patientDevices: {
                 some: {
                     unassignedAt: null
@@ -71,9 +85,10 @@ const findPatientsWithAssignedDevice = () => {
     });
 };
 exports.findPatientsWithAssignedDevice = findPatientsWithAssignedDevice;
-const findPatientsWithoutAssignedDevice = () => {
+const findPatientsWithoutAssignedDevice = (doctorUserId) => {
     return database_1.prisma.patient.findMany({
         where: {
+            ...(doctorUserId ? { doctor: { userId: doctorUserId } } : {}),
             patientDevices: {
                 none: {
                     unassignedAt: null
@@ -87,9 +102,12 @@ const findPatientsWithoutAssignedDevice = () => {
     });
 };
 exports.findPatientsWithoutAssignedDevice = findPatientsWithoutAssignedDevice;
-const findById = (id) => {
-    return database_1.prisma.patient.findUnique({
-        where: { id },
+const findById = (id, doctorUserId) => {
+    return database_1.prisma.patient.findFirst({
+        where: {
+            id,
+            ...(doctorUserId ? { doctor: { userId: doctorUserId } } : {})
+        },
         include: {
             patientDevices: {
                 where: {
@@ -103,6 +121,20 @@ const findById = (id) => {
     });
 };
 exports.findById = findById;
+const findDoctorById = (id) => {
+    return database_1.prisma.doctor.findFirst({
+        where: { id, deletedAt: null, user: { isActive: true, deletedAt: null } },
+        select: { id: true }
+    });
+};
+exports.findDoctorById = findDoctorById;
+const findDoctorByUserId = (userId) => {
+    return database_1.prisma.doctor.findFirst({
+        where: { userId, deletedAt: null, user: { isActive: true, deletedAt: null } },
+        select: { id: true }
+    });
+};
+exports.findDoctorByUserId = findDoctorByUserId;
 const update = (id, data) => {
     return database_1.prisma.patient.update({
         where: { id },
@@ -111,7 +143,8 @@ const update = (id, data) => {
             lastName: data.lastName,
             birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
             gender: data.gender,
-            bloodGroup: data.bloodGroup
+            bloodGroup: data.bloodGroup,
+            doctorId: data.doctorId
         }
     });
 };

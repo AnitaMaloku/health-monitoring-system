@@ -2,15 +2,22 @@ import { useEffect, useMemo, useState } from 'react'
 import { io, type Socket } from 'socket.io-client'
 import { mergeLatestMeasurement } from './data/health-data'
 import { DoctorDashboard } from './pages/doctor/dashboard'
-import { DoctorDevicesPage } from './pages/doctor/devices'
+import { AdminDevicesPage } from './pages/admin/devices'
 import { DoctorPatientDetailsPage } from './pages/doctor/patient-details'
 import { DoctorPatientsPage } from './pages/doctor/patients'
 import { DoctorPatientsHealthPage } from './pages/doctor/patientsHealth'
+import { DoctorAssignedDevicesPage } from './pages/doctor/assignedDevices'
+import { DoctorAvailableDevicesPage } from './pages/doctor/availableDevices'
+import { DoctorProfilePage } from './pages/doctor/profile'
+import { LoginPage } from './pages/login'
+import { Dashboard as AdminDashboard } from './pages/admin/dashboard'
+import { AdminPatientsPage } from './pages/admin/patients'
+import { AdminDoctorsPage } from './pages/admin/doctors'
+import { apiFetch, getSession, logout, type AuthUser, type Role } from './auth'
 import type { HealthMeasurement, Patient, Route } from './types'
 import './App.css'
 
 const socketUrl = import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:3003'
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3003'
 
 type BackendPatient = {
   id: string
@@ -79,22 +86,33 @@ const doctorNav: Array<{ label: string; route: Route }> = [
   { label: 'Dashboard', route: '/doctor/dashboard' },
   { label: 'Patients Health', route: '/doctor/patientsHealth' },
   { label: 'Patients', route: '/doctor/patients' },
-  { label: 'Devices', route: '/doctor/devices' },
+  { label: 'Assigned Devices', route: '/doctor/assigned-devices' },
+  { label: 'Available Devices', route: '/doctor/available-devices' },
+  { label: 'My Profile', route: '/doctor/profile' },
+]
+
+const adminNav: Array<{ label: string; route: Route }> = [
+  { label: 'Dashboard', route: '/admin/dashboard' },
+  { label: 'Patients', route: '/admin/patients' },
+  { label: 'Doctors', route: '/admin/doctors' },
+  { label: 'Devices', route: '/admin/devices' },
 ]
 
 const validRoutes = new Set<Route>([
+  ...adminNav.map((item) => item.route),
   ...doctorNav.map((item) => item.route),
   '/doctor/patient-details',
 ])
 
-function getCurrentRoute(): Route {
+function getCurrentRoute(role: Role): Route {
   const hashRoute = window.location.hash
     .replace('#', '')
     .split('?')[0] as Route
 
-  return validRoutes.has(hashRoute)
+  const rolePrefix = role === 'ADMIN' ? '/admin' : '/doctor'
+  return validRoutes.has(hashRoute) && hashRoute.startsWith(rolePrefix)
     ? hashRoute
-    : '/doctor/dashboard'
+    : `${rolePrefix}/dashboard` as Route
 }
 
 function getPatientIdFromHash(): string | null {
@@ -111,8 +129,16 @@ function getPatientIdFromHash(): string | null {
     : null
 }
 
-function App() {
-  const [route, setRoute] = useState<Route>(getCurrentRoute)
+function AuthenticatedApp({
+  user,
+  onLogout,
+  onUserUpdated,
+}: {
+  user: AuthUser
+  onLogout: () => void
+  onUserUpdated: (user: AuthUser) => void
+}) {
+  const [route, setRoute] = useState<Route>(() => getCurrentRoute(user.role))
 
   const [socketStatus, setSocketStatus] = useState<
     'connecting' | 'connected' | 'offline'
@@ -138,7 +164,7 @@ function App() {
 
   useEffect(() => {
     const onHashChange = () => {
-      setRoute(getCurrentRoute())
+      setRoute(getCurrentRoute(user.role))
     }
 
     window.addEventListener('hashchange', onHashChange)
@@ -146,7 +172,7 @@ function App() {
     return () => {
       window.removeEventListener('hashchange', onHashChange)
     }
-  }, [])
+  }, [user.role])
 
   // ---------------------------------------------------------
   // Load patients from backend
@@ -157,7 +183,7 @@ function App() {
 
     const loadPatients = async () => {
       try {
-        const response = await fetch(`${apiUrl}/patients`)
+        const response = await apiFetch('/patients')
 
         if (!response.ok) {
           throw new Error(
@@ -288,8 +314,7 @@ function App() {
      * Now update every patient independently.
      */
 
-    return dbPatients
-      .map((patient) => {
+    return dbPatients.map((patient) => {
         const latestMeasurement =
           latestByDevice.get(patient.device)
 
@@ -311,11 +336,6 @@ function App() {
 
         return updatedPatient
       })
-      .filter(
-        (patient) =>
-          patient.device &&
-          patient.device !== 'No device',
-      )
   }, [dbPatients, measurements])
 
   // ---------------------------------------------------------
@@ -356,12 +376,15 @@ function App() {
   // Render
   // ---------------------------------------------------------
 
+  const isAdmin = user.role === 'ADMIN'
+  const navigation = isAdmin ? adminNav : doctorNav
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
         <a
           className="brand"
-          href="#/doctor/dashboard"
+          href={`#/${user.role.toLowerCase()}/dashboard`}
         >
           <span className="brand-mark">HM</span>
 
@@ -371,19 +394,20 @@ function App() {
         </a>
 
         <RoleNav
-          title="Doctor"
-          items={doctorNav}
+          title={isAdmin ? 'Admin' : 'Doctor'}
+          items={navigation}
           route={route}
         />
+        <button className="logout-button" onClick={() => void onLogout()}>
+          Sign out
+        </button>
       </aside>
 
       <main className="workspace">
         <header className="topbar">
           <div>
             <p className="eyebrow">
-              {route.startsWith('/doctor')
-                ? 'Doctor portal'
-                : 'Patient portal'}
+              {isAdmin ? 'Admin portal' : 'Doctor portal'}
             </p>
 
             <h1>
@@ -398,7 +422,15 @@ function App() {
           </span>
         </header>
 
-        {route === '/doctor/dashboard' && (
+        {isAdmin && route === '/admin/dashboard' && <AdminDashboard />}
+
+        {isAdmin && route === '/admin/patients' && <AdminPatientsPage />}
+
+        {isAdmin && route === '/admin/doctors' && <AdminDoctorsPage />}
+
+        {isAdmin && route === '/admin/devices' && <AdminDevicesPage />}
+
+        {!isAdmin && route === '/doctor/dashboard' && (
           <DoctorDashboard
             patients={patients}
           />
@@ -431,12 +463,36 @@ function App() {
             />
           )}
 
-        {route === '/doctor/devices' && (
-          <DoctorDevicesPage />
-        )}
+        {!isAdmin && route === '/doctor/assigned-devices' && <DoctorAssignedDevicesPage />}
+
+        {!isAdmin && route === '/doctor/available-devices' && <DoctorAvailableDevicesPage />}
+
+        {!isAdmin && route === '/doctor/profile' && <DoctorProfilePage user={user} onUserUpdated={onUserUpdated} />}
+
+        
       </main>
     </div>
   )
+}
+
+function App() {
+  const [user, setUser] = useState<AuthUser | null>(() => getSession()?.user ?? null)
+
+  async function handleLogout() {
+    await logout()
+    setUser(null)
+  }
+
+  if (!user) {
+    return <LoginPage onLogin={(role: Role) => {
+      const session = getSession()
+      if (!session) return
+      setUser(session.user)
+      window.location.hash = role === 'ADMIN' ? '/admin/dashboard' : '/doctor/dashboard'
+    }} />
+  }
+
+  return <AuthenticatedApp user={user} onLogout={handleLogout} onUserUpdated={setUser} />
 }
 
 function RoleNav({
@@ -477,6 +533,11 @@ function RoleNav({
 
 function pageTitle(route: Route) {
   const titles: Record<Route, string> = {
+    '/login': 'Sign in',
+    '/admin/dashboard': 'Admin Dashboard',
+    '/admin/patients': 'Patients',
+    '/admin/doctors': 'Doctors',
+    '/admin/devices': 'Devices',
     '/doctor/dashboard':
       'Doctor Dashboard',
 
@@ -489,8 +550,14 @@ function pageTitle(route: Route) {
     '/doctor/patient-details':
       'Patient Details',
 
-    '/doctor/devices':
-      'Devices',
+    '/doctor/assigned-devices':
+      'Assigned Devices',
+
+    '/doctor/available-devices':
+      'Available Devices',
+
+    '/doctor/profile':
+      'My Profile',
   }
 
   return titles[route]

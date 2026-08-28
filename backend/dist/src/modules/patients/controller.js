@@ -37,7 +37,7 @@ exports.getMeasurementsByPatientId = exports.deletePatient = exports.updatePatie
 const patientService = __importStar(require("./service"));
 const createPatient = async (req, res, next) => {
     try {
-        const patient = await patientService.createPatient(req.body);
+        const patient = await patientService.createPatient(req.body, req.user);
         res.status(201).json(patient);
     }
     catch (error) {
@@ -48,7 +48,7 @@ const createPatient = async (req, res, next) => {
 exports.createPatient = createPatient;
 const getPatients = async (req, res, next) => {
     try {
-        const patients = await patientService.getPatients();
+        const patients = await patientService.getPatients(req.user);
         res.status(200).json(patients);
     }
     catch (error) {
@@ -58,7 +58,7 @@ const getPatients = async (req, res, next) => {
 exports.getPatients = getPatients;
 const getPatientsWithAssignedDevice = async (req, res, next) => {
     try {
-        const patients = await patientService.getPatientsWithAssignedDevice();
+        const patients = await patientService.getPatientsWithAssignedDevice(req.user);
         res.status(200).json(patients);
     }
     catch (error) {
@@ -68,7 +68,7 @@ const getPatientsWithAssignedDevice = async (req, res, next) => {
 exports.getPatientsWithAssignedDevice = getPatientsWithAssignedDevice;
 const getPatientsWithoutAssignedDevice = async (req, res, next) => {
     try {
-        const patients = await patientService.getPatientsWithoutAssignedDevice();
+        const patients = await patientService.getPatientsWithoutAssignedDevice(req.user);
         res.status(200).json(patients);
     }
     catch (error) {
@@ -78,7 +78,7 @@ const getPatientsWithoutAssignedDevice = async (req, res, next) => {
 exports.getPatientsWithoutAssignedDevice = getPatientsWithoutAssignedDevice;
 const getPatientById = async (req, res, next) => {
     try {
-        const patient = await patientService.getPatientById(req.params.id);
+        const patient = await patientService.getPatientById(req.params.id, req.user);
         res.status(200).json(patient);
     }
     catch (error) {
@@ -88,7 +88,7 @@ const getPatientById = async (req, res, next) => {
 exports.getPatientById = getPatientById;
 const updatePatient = async (req, res, next) => {
     try {
-        const patient = await patientService.updatePatient(req.params.id, req.body);
+        const patient = await patientService.updatePatient(req.params.id, req.body, req.user);
         res.status(200).json(patient);
     }
     catch (error) {
@@ -98,7 +98,7 @@ const updatePatient = async (req, res, next) => {
 exports.updatePatient = updatePatient;
 const deletePatient = async (req, res, next) => {
     try {
-        await patientService.deletePatient(req.params.id);
+        await patientService.deletePatient(req.params.id, req.user);
         res.status(204).send();
     }
     catch (error) {
@@ -109,7 +109,7 @@ exports.deletePatient = deletePatient;
 const getMeasurementsByPatientId = async (req, res, next) => {
     try {
         const limit = req.query.limit ? parseInt(req.query.limit) : 20;
-        const measurements = await patientService.getMeasurementsByPatientId(req.params.id, limit);
+        const measurements = await patientService.getMeasurementsByPatientId(req.params.id, limit, req.user);
         res.status(200).json(measurements);
     }
     catch (error) {

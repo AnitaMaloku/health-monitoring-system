@@ -5,6 +5,10 @@ import { startMqttHealthIngest } from "./infra/mqtt/mqtt.handler";
 import { initializeSocket } from "./infra/websocket/socket.server";
 import deviceRoutes from "./modules/devices/route";
 import patientRoutes from "./modules/patients/routes";
+import authRoutes from "./modules/auth/routes";
+import { authenticate, requireRole } from "./middleware/auth.middleware";
+import doctorRoutes from "./modules/doctors/routes";
+import { UserRole } from "./generated/prisma/enums";
 import { ApiError } from "./utils/api-error";
 
 
@@ -25,8 +29,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use(express.json());
 
-app.use("/patients", patientRoutes);
-app.use("/devices", deviceRoutes);
+app.use("/auth", authRoutes);
+app.use("/patients", authenticate, patientRoutes);
+app.use("/devices", authenticate, deviceRoutes);
+app.use("/admin/doctors", authenticate, requireRole(UserRole.ADMIN), doctorRoutes);
 
 app.get("/", (req: Request, res: Response) => {
     res.json({

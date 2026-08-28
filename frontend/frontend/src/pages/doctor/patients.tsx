@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiFetch } from '../../auth'
 
 type BackendPatient = {
   id: string
@@ -29,7 +30,6 @@ type PatientFormState = {
   bloodGroup: string
 }
 
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3003'
 
 const emptyForm: PatientFormState = {
   firstName: '',
@@ -101,11 +101,17 @@ export function DoctorPatientsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<PatientFormState>(emptyForm)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState({
+    name: '',
+    dateOfBirth: '',
+    age: '',
+    gender: '',
+    bloodGroup: '',
+  })
 
   const loadPatients = async () => {
     try {
-      const response = await fetch(`${apiUrl}/patients`)
+      const response = await apiFetch('/patients')
 
       if (!response.ok) {
         throw new Error('Could not load patients from the database.')
@@ -177,12 +183,12 @@ export function DoctorPatientsPage() {
       }
 
       const response = editingId
-        ? await fetch(`${apiUrl}/patients/${editingId}`, {
+        ? await apiFetch(`/patients/${editingId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           })
-        : await fetch(`${apiUrl}/patients`, {
+        : await apiFetch('/patients', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -208,7 +214,7 @@ export function DoctorPatientsPage() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`${apiUrl}/patients/${patientId}`, {
+      const response = await apiFetch(`/patients/${patientId}`, {
         method: 'DELETE',
       })
 
@@ -226,8 +232,11 @@ export function DoctorPatientsPage() {
   }
 
   const filteredPatients = patients.filter((patient) =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.bloodGroup.toLowerCase().includes(searchTerm.toLowerCase())
+    patient.name.toLowerCase().includes(filters.name.toLowerCase()) &&
+    patient.dateOfBirth.toLowerCase().includes(filters.dateOfBirth.toLowerCase()) &&
+    String(patient.age).toLowerCase().includes(filters.age.toLowerCase()) &&
+    patient.gender.toLowerCase().includes(filters.gender.toLowerCase()) &&
+    patient.bloodGroup.toLowerCase().includes(filters.bloodGroup.toLowerCase())
   )
 
   return (
@@ -241,13 +250,14 @@ export function DoctorPatientsPage() {
 
       {error && <p className="form-error">{error}</p>}
 
-      <input
-        type="text"
-        className="search-input"
-        placeholder="Search by name or blood group..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+      <div className="column-filters doctor-column-filters">
+        <input placeholder="Filter name" value={filters.name} onChange={(event) => setFilters({ ...filters, name: event.target.value })} />
+        <input placeholder="Filter date of birth" value={filters.dateOfBirth} onChange={(event) => setFilters({ ...filters, dateOfBirth: event.target.value })} />
+        <input placeholder="Filter age" value={filters.age} onChange={(event) => setFilters({ ...filters, age: event.target.value })} />
+        <input placeholder="Filter gender" value={filters.gender} onChange={(event) => setFilters({ ...filters, gender: event.target.value })} />
+        <input placeholder="Filter blood group" value={filters.bloodGroup} onChange={(event) => setFilters({ ...filters, bloodGroup: event.target.value })} />
+        <button type="button" onClick={() => setFilters({ name: '', dateOfBirth: '', age: '', gender: '', bloodGroup: '' })}>Clear</button>
+      </div>
 
       {isFormOpen && (
         <div className="modal-overlay" onClick={resetForm}>

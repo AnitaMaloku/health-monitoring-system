@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { AuthUser } from "../auth/types";
 import * as deviceService from "./service";
 
 export const createDevice = async (
@@ -67,12 +68,12 @@ export const deleteDevice = async (
 };
 
 export const assignDeviceToPatient = async (
-    req: Request,
+    req: Request & { user?: AuthUser },
     res: Response,
     next: NextFunction
 ) => {
     try {
-        const assignment = await deviceService.assignDeviceToPatient(req.body);
+        const assignment = await deviceService.assignDeviceToPatient(req.body, req.user);
         res.status(201).json(assignment);
     } catch (error) {
         next(error);

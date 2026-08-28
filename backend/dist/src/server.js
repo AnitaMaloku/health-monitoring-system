@@ -10,6 +10,10 @@ const mqtt_handler_1 = require("./infra/mqtt/mqtt.handler");
 const socket_server_1 = require("./infra/websocket/socket.server");
 const route_1 = __importDefault(require("./modules/devices/route"));
 const routes_1 = __importDefault(require("./modules/patients/routes"));
+const routes_2 = __importDefault(require("./modules/auth/routes"));
+const auth_middleware_1 = require("./middleware/auth.middleware");
+const routes_3 = __importDefault(require("./modules/doctors/routes"));
+const enums_1 = require("./generated/prisma/enums");
 const api_error_1 = require("./utils/api-error");
 const app = (0, express_1.default)();
 app.use((req, res, next) => {
@@ -23,8 +27,10 @@ app.use((req, res, next) => {
     next();
 });
 app.use(express_1.default.json());
-app.use("/patients", routes_1.default);
-app.use("/devices", route_1.default);
+app.use("/auth", routes_2.default);
+app.use("/patients", auth_middleware_1.authenticate, routes_1.default);
+app.use("/devices", auth_middleware_1.authenticate, route_1.default);
+app.use("/admin/doctors", auth_middleware_1.authenticate, (0, auth_middleware_1.requireRole)(enums_1.UserRole.ADMIN), routes_3.default);
 app.get("/", (req, res) => {
     res.json({
         message: "Health Monitoring API running"

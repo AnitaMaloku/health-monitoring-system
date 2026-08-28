@@ -1,9 +1,16 @@
 export type Route =
+  | '/login'
+  | '/admin/dashboard'
+  | '/admin/patients'
+  | '/admin/doctors'
+  | '/admin/devices'
   | '/doctor/dashboard'
   | '/doctor/patients'
   | '/doctor/patientsHealth'
   | '/doctor/patient-details'
-  | '/doctor/devices'
+  | '/doctor/assigned-devices'
+  | '/doctor/available-devices'
+  | '/doctor/profile'
 
 export type HealthMeasurement = {
   id?: number

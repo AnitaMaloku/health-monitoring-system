@@ -20,6 +20,47 @@ enum DeviceStatus {
   RETIRED       // permanently decommissioned, no longer usable
 }
 
+enum UserRole {
+  ADMIN
+  DOCTOR
+}
+
+model User {
+  id        String    @id @default(uuid()) @db.Uuid
+  email     String    @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole
+  isActive  Boolean   @default(true)
+  deletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+
+  doctor          Doctor?   // present only when role = DOCTOR
+  createdPatients Patient[]
+  refreshTokens   RefreshToken[]
+
+
+  @@index([deletedAt])
+}
+
+model Doctor {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @unique @db.Uuid
+  specialization String?
+  licenseNumber  String?   @unique
+  phone          String?
+  deletedAt      DateTime? @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(3)
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  patients       Patient[]
+
+  @@index([userId])
+  @@index([deletedAt])
+}
 
 
 model Patient {
@@ -32,7 +73,14 @@ model Patient {
   createdAt   DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
 
+  doctorId    String?   @db.Uuid
+  doctor      Doctor?   @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  createdById String? @db.Uuid
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  @@index([createdById])
   patientDevices PatientDevice[]
+
+  @@index([doctorId])
 
 }
 
@@ -82,3 +130,17 @@ model HealthMeasurement {
   @@index([timestamp])
 }
 
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  token     String    @unique          // store a hash, not the raw token
+  userId    String    @db.Uuid
+  expiresAt DateTime  @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}

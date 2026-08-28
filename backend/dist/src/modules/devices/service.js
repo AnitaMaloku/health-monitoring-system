@@ -66,9 +66,9 @@ const deleteDevice = async (id) => {
     return deviceRepository.remove(id);
 };
 exports.deleteDevice = deleteDevice;
-const assignDeviceToPatient = async (data) => {
+const assignDeviceToPatient = async (data, user) => {
     const [patient, device, patientAssignment, deviceAssignment] = await Promise.all([
-        patientRepository.findById(data.patientId),
+        patientRepository.findById(data.patientId, user?.role === "DOCTOR" ? user.id : undefined),
         deviceRepository.findById(data.deviceId),
         deviceRepository.findActiveAssignmentByPatientId(data.patientId),
         deviceRepository.findActiveAssignmentByDeviceId(data.deviceId)

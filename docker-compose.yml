@@ -43,6 +43,7 @@ services:
     environment:
       DATABASE_URL: postgresql://health:password@db:5432/health_monitoring?schema=public
       MQTT_URL: mqtt://mqtt:1883
+      JWT_SECRET: change-this-development-secret
       PORT: 3003
       NODE_ENV: production
     ports:

@@ -1,4 +1,5 @@
 import { ApiError } from "../../utils/api-error";
+import { AuthUser } from "../auth/types";
 import * as patientRepository from "../patients/repository";
 import { AssignDeviceDto, CreateDeviceDto, UpdateDeviceDto } from "./dto";
 import * as deviceRepository from "./repository";
@@ -36,9 +37,9 @@ export const deleteDevice = async (id: string) => {
     return deviceRepository.remove(id);
 };
 
-export const assignDeviceToPatient = async (data: AssignDeviceDto) => {
+export const assignDeviceToPatient = async (data: AssignDeviceDto, user?: AuthUser) => {
     const [patient, device, patientAssignment, deviceAssignment] = await Promise.all([
-        patientRepository.findById(data.patientId),
+        patientRepository.findById(data.patientId, user?.role === "DOCTOR" ? user.id : undefined),
         deviceRepository.findById(data.deviceId),
         deviceRepository.findActiveAssignmentByPatientId(data.patientId),
         deviceRepository.findActiveAssignmentByDeviceId(data.deviceId)

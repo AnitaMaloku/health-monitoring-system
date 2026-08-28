@@ -48,7 +48,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defineExtension = exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.AlertScalarFieldEnum = exports.HealthMeasurementScalarFieldEnum = exports.PatientDeviceScalarFieldEnum = exports.DeviceScalarFieldEnum = exports.PatientScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
+exports.defineExtension = exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.RefreshTokenScalarFieldEnum = exports.HealthMeasurementScalarFieldEnum = exports.PatientDeviceScalarFieldEnum = exports.DeviceScalarFieldEnum = exports.PatientScalarFieldEnum = exports.DoctorScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/client"));
 /**
  * Prisma Errors
@@ -103,11 +103,13 @@ exports.JsonNull = runtime.JsonNull;
  */
 exports.AnyNull = runtime.AnyNull;
 exports.ModelName = {
+    User: 'User',
+    Doctor: 'Doctor',
     Patient: 'Patient',
     Device: 'Device',
     PatientDevice: 'PatientDevice',
     HealthMeasurement: 'HealthMeasurement',
-    Alert: 'Alert'
+    RefreshToken: 'RefreshToken'
 };
 /**
  * Enums
@@ -118,6 +120,28 @@ exports.TransactionIsolationLevel = runtime.makeStrictEnum({
     RepeatableRead: 'RepeatableRead',
     Serializable: 'Serializable'
 });
+exports.UserScalarFieldEnum = {
+    id: 'id',
+    email: 'email',
+    password: 'password',
+    firstName: 'firstName',
+    lastName: 'lastName',
+    role: 'role',
+    isActive: 'isActive',
+    deletedAt: 'deletedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+exports.DoctorScalarFieldEnum = {
+    id: 'id',
+    userId: 'userId',
+    specialization: 'specialization',
+    licenseNumber: 'licenseNumber',
+    phone: 'phone',
+    deletedAt: 'deletedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
 exports.PatientScalarFieldEnum = {
     id: 'id',
     firstName: 'firstName',
@@ -126,7 +150,9 @@ exports.PatientScalarFieldEnum = {
     gender: 'gender',
     bloodGroup: 'bloodGroup',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    doctorId: 'doctorId',
+    createdById: 'createdById'
 };
 exports.DeviceScalarFieldEnum = {
     id: 'id',
@@ -155,15 +181,13 @@ exports.HealthMeasurementScalarFieldEnum = {
     respiratoryRate: 'respiratoryRate',
     timestamp: 'timestamp'
 };
-exports.AlertScalarFieldEnum = {
+exports.RefreshTokenScalarFieldEnum = {
     id: 'id',
-    patientId: 'patientId',
-    level: 'level',
-    metric: 'metric',
-    value: 'value',
-    message: 'message',
-    createdAt: 'createdAt',
-    resolvedAt: 'resolvedAt'
+    token: 'token',
+    userId: 'userId',
+    expiresAt: 'expiresAt',
+    revokedAt: 'revokedAt',
+    createdAt: 'createdAt'
 };
 exports.SortOrder = {
     asc: 'asc',

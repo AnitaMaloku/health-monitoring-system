@@ -9,14 +9,14 @@
 * 🟢 You can import this file directly.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AlertLevel = exports.DeviceStatus = void 0;
+exports.UserRole = exports.DeviceStatus = void 0;
 exports.DeviceStatus = {
     ACTIVE: 'ACTIVE',
     INACTIVE: 'INACTIVE',
     MAINTENANCE: 'MAINTENANCE',
     RETIRED: 'RETIRED'
 };
-exports.AlertLevel = {
-    WARNING: 'WARNING',
-    CRITICAL: 'CRITICAL'
+exports.UserRole = {
+    ADMIN: 'ADMIN',
+    DOCTOR: 'DOCTOR'
 };

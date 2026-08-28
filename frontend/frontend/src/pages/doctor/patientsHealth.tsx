@@ -9,11 +9,13 @@ export function DoctorPatientsHealthPage({
   patients: Patient[]
   onOpenPatient: (id: string | number) => void
 }) {
-  const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState({ name: '', age: '', device: '', status: '' })
 
   const filteredPatients = patients.filter((patient) =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.device.toLowerCase().includes(searchTerm.toLowerCase())
+    patient.name.toLowerCase().includes(filters.name.toLowerCase()) &&
+    String(patient.age).toLowerCase().includes(filters.age.toLowerCase()) &&
+    patient.device.toLowerCase().includes(filters.device.toLowerCase()) &&
+    patient.status.toLowerCase().includes(filters.status.toLowerCase())
   )
 
   return (
@@ -22,13 +24,13 @@ export function DoctorPatientsHealthPage({
         <h2>Patients</h2>
       </div>
 
-      <input
-        type="text"
-        className="search-input"
-        placeholder="Search by patient name or device..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+      <div className="column-filters doctor-column-filters four-columns">
+        <input placeholder="Filter name" value={filters.name} onChange={(event) => setFilters({ ...filters, name: event.target.value })} />
+        <input placeholder="Filter age" value={filters.age} onChange={(event) => setFilters({ ...filters, age: event.target.value })} />
+        <input placeholder="Filter device" value={filters.device} onChange={(event) => setFilters({ ...filters, device: event.target.value })} />
+        <input placeholder="Filter status" value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })} />
+        <button type="button" onClick={() => setFilters({ name: '', age: '', device: '', status: '' })}>Clear</button>
+      </div>
 
       <div className="data-table patient-table">
         <div className="table-row table-head">

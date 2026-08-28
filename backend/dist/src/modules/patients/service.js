@@ -36,42 +36,59 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMeasurementsByPatientId = exports.deletePatient = exports.updatePatient = exports.getPatientById = exports.getPatientsWithoutAssignedDevice = exports.getPatientsWithAssignedDevice = exports.getPatients = exports.createPatient = void 0;
 const api_error_1 = require("../../utils/api-error");
 const patientRepository = __importStar(require("./repository"));
-const createPatient = async (data) => {
-    return patientRepository.create(data);
+async function getDoctorUserId(user) {
+    return user?.role === "DOCTOR" ? user.id : undefined;
+}
+async function getDoctorIdForUser(userId) {
+    const doctor = await patientRepository.findDoctorByUserId(userId);
+    if (!doctor)
+        throw new api_error_1.ApiError(403, "Doctor profile not found");
+    return doctor.id;
+}
+const createPatient = async (data, user) => {
+    const doctorId = user?.role === "DOCTOR"
+        ? await getDoctorIdForUser(user.id)
+        : data.doctorId;
+    if (doctorId) {
+        const doctor = await patientRepository.findDoctorById(doctorId);
+        if (!doctor)
+            throw new api_error_1.ApiError(404, "Doctor not found");
+    }
+    return patientRepository.create({ ...data, doctorId }, user?.id);
 };
 exports.createPatient = createPatient;
-const getPatients = async () => {
-    return patientRepository.findAll();
+const getPatients = async (user) => {
+    return patientRepository.findAll(await getDoctorUserId(user));
 };
 exports.getPatients = getPatients;
-const getPatientsWithAssignedDevice = async () => {
-    return patientRepository.findPatientsWithAssignedDevice();
+const getPatientsWithAssignedDevice = async (user) => {
+    return patientRepository.findPatientsWithAssignedDevice(await getDoctorUserId(user));
 };
 exports.getPatientsWithAssignedDevice = getPatientsWithAssignedDevice;
-const getPatientsWithoutAssignedDevice = async () => {
-    return patientRepository.findPatientsWithoutAssignedDevice();
+const getPatientsWithoutAssignedDevice = async (user) => {
+    return patientRepository.findPatientsWithoutAssignedDevice(await getDoctorUserId(user));
 };
 exports.getPatientsWithoutAssignedDevice = getPatientsWithoutAssignedDevice;
-const getPatientById = async (id) => {
-    const patient = await patientRepository.findById(id);
+const getPatientById = async (id, user) => {
+    const patient = await patientRepository.findById(id, await getDoctorUserId(user));
     if (!patient) {
         throw new api_error_1.ApiError(404, "Patient not found");
     }
     return patient;
 };
 exports.getPatientById = getPatientById;
-const updatePatient = async (id, data) => {
-    await (0, exports.getPatientById)(id);
+const updatePatient = async (id, data, user) => {
+    await (0, exports.getPatientById)(id, user);
     return patientRepository.update(id, data);
 };
 exports.updatePatient = updatePatient;
-const deletePatient = async (id) => {
-    await (0, exports.getPatientById)(id);
+const deletePatient = async (id, user) => {
+    await (0, exports.getPatientById)(id, user);
     return patientRepository.remove(id);
 };
 exports.deletePatient = deletePatient;
-const getMeasurementsByPatientId = async (patientId, limit = 20) => {
-    await (0, exports.getPatientById)(patientId);
+const getMeasurementsByPatientId = async (patientId, limit = 20, user) => {
+    await (0, exports.getPatientById)(patientId, user);
     return patientRepository.findMeasurementsByPatientId(patientId, limit);
 };
 exports.getMeasurementsByPatientId = getMeasurementsByPatientId;

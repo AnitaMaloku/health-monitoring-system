@@ -87,7 +87,7 @@ const deleteDevice = async (req, res, next) => {
 exports.deleteDevice = deleteDevice;
 const assignDeviceToPatient = async (req, res, next) => {
     try {
-        const assignment = await deviceService.assignDeviceToPatient(req.body);
+        const assignment = await deviceService.assignDeviceToPatient(req.body, req.user);
         res.status(201).json(assignment);
     }
     catch (error) {

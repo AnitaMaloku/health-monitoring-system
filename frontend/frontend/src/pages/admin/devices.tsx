@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiFetch } from '../../auth'
 
 type DeviceStatus = 'Active' | 'Inactive' | 'Maintenance' | 'Retired'
 
@@ -35,7 +36,6 @@ type BackendDevice = {
   }>
 }
 
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3003'
 
 function toDeviceStatus(status: BackendDevice['status']): DeviceStatus {
   const statuses: Record<BackendDevice['status'], DeviceStatus> = {
@@ -86,7 +86,7 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
 }
 
-export function DoctorDevicesPage() {
+export function AdminDevicesPage() {
   const [devices, setDevices] = useState<DeviceRow[]>([])
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -96,16 +96,21 @@ export function DoctorDevicesPage() {
   const [availablePatients, setAvailablePatients] = useState<PatientOption[]>([])
   const [isAssignmentOpen, setIsAssignmentOpen] = useState(false)
   const [isLoadingPatients, setIsLoadingPatients] = useState(false)
+  const [filters, setFilters] = useState({
+    serial: '',
+    type: '',
+    status: '',
+    patient: '',
+  })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isAssigning, setIsAssigning] = useState(false)
   const [isUnassigningId, setIsUnassigningId] = useState<string | null>(null)
 
   const loadDevices = async () => {
     try {
-      const response = await fetch(`${apiUrl}/devices`)
+      const response = await apiFetch('/devices')
 
       if (!response.ok) {
         throw new Error('Could not load devices from the database.')
@@ -193,14 +198,14 @@ export function DoctorDevicesPage() {
           }
 
       const response = editingId
-        ? await fetch(`${apiUrl}/devices/${editingId}`, {
+        ? await apiFetch(`/devices/${editingId}`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(payload),
           })
-        : await fetch(`${apiUrl}/devices`, {
+        : await apiFetch('/devices', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -239,7 +244,7 @@ export function DoctorDevicesPage() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`${apiUrl}/devices/${deviceId}`, {
+      const response = await apiFetch(`/devices/${deviceId}`, {
         method: 'DELETE',
       })
 
@@ -269,7 +274,7 @@ export function DoctorDevicesPage() {
     setIsLoadingPatients(true)
 
     try {
-      const response = await fetch(`${apiUrl}/patients/without-device`)
+      const response = await apiFetch('/patients/without-device')
 
       if (!response.ok) {
         throw new Error('Could not load available patients.')
@@ -308,7 +313,7 @@ export function DoctorDevicesPage() {
     setError('')
 
     try {
-      const response = await fetch(`${apiUrl}/devices/assign`, {
+      const response = await apiFetch('/devices/assign', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -344,7 +349,7 @@ export function DoctorDevicesPage() {
     setError('')
 
     try {
-      const response = await fetch(`${apiUrl}/devices/${deviceId}/unassign`, {
+      const response = await apiFetch(`/devices/${deviceId}/unassign`, {
         method: 'POST',
       })
 
@@ -364,10 +369,13 @@ export function DoctorDevicesPage() {
     }
   }
 
+  const statusFilter = filters.status.trim().toLowerCase()
+
   const filteredDevices = devices.filter((device) =>
-    device.serial.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    device.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    device.patient.toLowerCase().includes(searchTerm.toLowerCase())
+    device.serial.toLowerCase().includes(filters.serial.toLowerCase()) &&
+    device.type.toLowerCase().includes(filters.type.toLowerCase()) &&
+    (!statusFilter || device.status.toLowerCase() === statusFilter) &&
+    device.patient.toLowerCase().includes(filters.patient.toLowerCase())
   )
 
   return (
@@ -386,13 +394,37 @@ export function DoctorDevicesPage() {
 
         {error && <p className="form-error">{error}</p>}
 
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search by serial number, type, or patient name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <div className="column-filters">
+          <input
+            placeholder="Filter serial number"
+            value={filters.serial}
+            onChange={(event) => setFilters({ ...filters, serial: event.target.value })}
+          />
+          <input
+            placeholder="Filter type"
+            value={filters.type}
+            onChange={(event) => setFilters({ ...filters, type: event.target.value })}
+          />
+          <select
+            value={filters.status}
+            onChange={(event) => setFilters({ ...filters, status: event.target.value })}
+          >
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <input
+            placeholder="Filter patient"
+            value={filters.patient}
+            onChange={(event) => setFilters({ ...filters, patient: event.target.value })}
+          />
+          <button
+            type="button"
+            onClick={() => setFilters({ serial: '', type: '', status: '', patient: '' })}
+          >
+            Clear
+          </button>
+        </div>
 
         {isFormOpen && (
           <div className="modal-overlay" onClick={resetForm}>

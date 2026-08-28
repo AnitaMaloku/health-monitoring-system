@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { HealthMeasurement, Patient } from '../types'
 import { MiniChart } from './MiniChart'
+import { apiFetch } from '../auth'
 
 type HealthHistoryTableProps = {
   patient?: Patient
@@ -10,8 +11,6 @@ export function HealthHistoryTable({ patient }: HealthHistoryTableProps) {
   const [measurements, setMeasurements] = useState<HealthMeasurement[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3003'
 
   useEffect(() => {
     if (!patient || patient.id === undefined) {
@@ -25,8 +24,8 @@ export function HealthHistoryTable({ patient }: HealthHistoryTableProps) {
 
     const fetchMeasurements = async () => {
       try {
-        const response = await fetch(
-          `${apiUrl}/patients/${patient.id}/measurements?limit=20`,
+        const response = await apiFetch(
+          `/patients/${patient.id}/measurements?limit=20`,
         )
 
         if (!response.ok) {
@@ -57,7 +56,7 @@ export function HealthHistoryTable({ patient }: HealthHistoryTableProps) {
     return () => {
       isMounted = false
     }
-  }, [patient?.id, apiUrl])
+  }, [patient?.id])
 
   const formatTimestamp = (timestamp?: string): string => {
     if (!timestamp) return 'N/A'
