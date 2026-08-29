@@ -13,6 +13,12 @@ export const create = (data: CreateDeviceDto) => {
     });
 };
 
+export const findBySerialNumber = (serialNumber: string) => {
+    return prisma.device.findUnique({
+        where: { serialNumber }
+    });
+};
+
 export const findAll = () => {
     return prisma.device.findMany({
         include: {

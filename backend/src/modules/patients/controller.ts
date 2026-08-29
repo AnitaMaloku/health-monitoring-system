@@ -88,7 +88,9 @@ export const deletePatient = async (
 ) => {
     try {
         await patientService.deletePatient(req.params.id, req.user);
-        res.status(204).send();
+        res.status(200).json({
+            message: "Patient deleted successfully"
+        });
     } catch (error) {
         next(error);
     }

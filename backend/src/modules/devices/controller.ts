@@ -61,7 +61,9 @@ export const deleteDevice = async (
 ) => {
     try {
         await deviceService.deleteDevice(req.params.id);
-        res.status(204).send();
+        res.status(200).json({
+            message: "Device deleted successfully"
+        });
     } catch (error) {
         next(error);
     }

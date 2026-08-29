@@ -5,7 +5,30 @@ import { AssignDeviceDto, CreateDeviceDto, UpdateDeviceDto } from "./dto";
 import * as deviceRepository from "./repository";
 
 export const createDevice = async (data: CreateDeviceDto) => {
-    return deviceRepository.create(data);
+    const serialNumber = data.serialNumber.trim();
+    const existingDevice = await deviceRepository.findBySerialNumber(serialNumber);
+
+    if (existingDevice) {
+        throw new ApiError(409, "Device with this serial number already exists");
+    }
+
+    try {
+        return await deviceRepository.create({
+            ...data,
+            serialNumber
+        });
+    } catch (error: unknown) {
+        if (
+            typeof error === "object" &&
+            error !== null &&
+            "code" in error &&
+            error.code === "P2002"
+        ) {
+            throw new ApiError(409, "Device with this serial number already exists");
+        }
+
+        throw error;
+    }
 };
 
 export const getDevices = async () => {

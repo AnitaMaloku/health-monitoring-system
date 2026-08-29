@@ -5,4 +5,4 @@ export async function getDoctors(_req: Request, res: Response, next: NextFunctio
 export async function getDoctorById(req: Request<{ id: string }>, res: Response, next: NextFunction) { try { res.json(await service.getDoctorById(req.params.id)); } catch (error) { next(error); } }
 export async function createDoctor(req: Request, res: Response, next: NextFunction) { try { res.status(201).json(await service.createDoctor(req.body)); } catch (error) { next(error); } }
 export async function updateDoctor(req: Request<{ id: string }>, res: Response, next: NextFunction) { try { res.json(await service.updateDoctor(req.params.id, req.body)); } catch (error) { next(error); } }
-export async function deleteDoctor(req: Request<{ id: string }>, res: Response, next: NextFunction) { try { await service.deleteDoctor(req.params.id); res.status(204).send(); } catch (error) { next(error); } }
+export async function deleteDoctor(req: Request<{ id: string }>, res: Response, next: NextFunction) { try { await service.deleteDoctor(req.params.id); res.status(200).json({ message: "Doctor deleted successfully" }); } catch (error) { next(error); } }
