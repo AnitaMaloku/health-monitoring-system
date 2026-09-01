@@ -36,7 +36,7 @@ export function Dashboard() {
     const attentionDevices = devices.filter((device) => device.status === 'MAINTENANCE' || device.status === 'RETIRED').length
 
     return <div className="admin-dashboard page-stack">
-        <section className="admin-welcome"><div><p className="eyebrow">System overview</p><h2>Good morning, administrator</h2><p>Keep track of the people, care teams, and connected equipment in Health Monitor.</p></div><div className="admin-date">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}</div></section>
+        <section className="admin-welcome"><div><p className="eyebrow">System overview</p><p>Keep track of the people, care teams, and connected equipment in Health Monitor.</p></div><div className="admin-date">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}</div></section>
         {error && <p className="admin-error">{error}</p>}
         {loading ? <section className="panel empty-state">Loading system overview...</section> : <>
             <section className="metric-grid admin-metrics" aria-label="System totals"><Metric label="Registered patients" value={patients.length} tone="normal" /><Metric label="Active doctors" value={doctors.length} /><Metric label="Total devices" value={devices.length} /><Metric label="Assigned devices" value={assignedDevices} tone="normal" /></section>
