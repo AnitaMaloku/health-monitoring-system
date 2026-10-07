@@ -16,12 +16,17 @@ export function classifyVitals(vitals: Patient['vitals']): PatientStatus {
 
   // WARNING
   if (
-    vitals.heartRate >= 105 || vitals.heartRate <= 60 ||
-    vitals.spo2 <= 94 ||
-    vitals.temp >= 37.8 || vitals.temp <= 36 ||
-    vitals.respiratoryRate >= 20 || vitals.respiratoryRate <= 12 ||
-    vitals.systolicPressure >= 140 || vitals.systolicPressure <= 100 ||
-    vitals.diastolicPressure >= 90 || vitals.diastolicPressure <= 60
+    vitals.heartRate > 100 && vitals.heartRate < 130 ||
+  vitals.heartRate > 40 && vitals.heartRate < 60 ||
+  vitals.spo2 > 90 && vitals.spo2 < 95 ||
+  vitals.temp > 37.2 && vitals.temp < 39 ||
+  vitals.temp > 35 && vitals.temp < 36.5 ||
+  vitals.respiratoryRate > 18 && vitals.respiratoryRate < 24 ||
+  vitals.respiratoryRate > 8 && vitals.respiratoryRate < 12 ||
+  vitals.systolicPressure > 119 && vitals.systolicPressure < 180 ||
+  vitals.systolicPressure > 90 && vitals.systolicPressure < 100 ||
+  vitals.diastolicPressure > 79 && vitals.diastolicPressure < 120 ||
+  vitals.diastolicPressure > 50 && vitals.diastolicPressure < 60
   ) {
     return 'warning'
   }
