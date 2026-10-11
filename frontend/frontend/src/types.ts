@@ -23,6 +23,7 @@ export type HealthMeasurement = {
   diastolicPressure?: number | null
   respiratoryRate?: number | null
   timestamp?: string
+  generatedAt?: string
 }
 
 export type PatientStatus = 'normal' | 'warning' | 'critical'

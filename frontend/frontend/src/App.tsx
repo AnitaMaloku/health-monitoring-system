@@ -16,6 +16,7 @@ import { AdminDoctorsPage } from './pages/admin/doctors'
 import { apiFetch, getSession, logout, type AuthUser, type Role } from './auth'
 import type { HealthMeasurement, Patient, Route } from './types'
 import './App.css'
+import { classifyVitals } from './data/health-data'
 
 const socketUrl = import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:3003'
 
@@ -252,19 +253,73 @@ function AuthenticatedApp({
       setSocketStatus('offline')
     })
 
-    socket.on(
-      'healthMeasurement',
-      (measurement: HealthMeasurement) => {
-        console.log(
-          '[frontend] received measurement:',
-          measurement,
-        )
+   
+socket.on(
+  'healthMeasurement',
+  (measurement: HealthMeasurement) => {
+    console.log('[frontend] received measurement:', measurement)
 
-        setMeasurements((current) => {
-          return [measurement, ...current].slice(0, 100)
-        })
-      },
+    const temp =
+      typeof measurement.temp === 'string'
+        ? Number(measurement.temp)
+        : measurement.temp
+
+    const serialNumber = measurement.serialNumber?.trim()
+
+    const hasCompleteVitals = [
+      measurement.heartRate,
+      measurement.spo2,
+      temp,
+      measurement.systolicPressure,
+      measurement.diastolicPressure,
+      measurement.respiratoryRate,
+    ].every(
+      (value) =>
+        typeof value === 'number' &&
+        Number.isFinite(value),
     )
+
+    if (hasCompleteVitals && serialNumber) {
+      const status = classifyVitals({
+        serialNumber,
+        heartRate: measurement.heartRate!,
+        spo2: measurement.spo2!,
+        temp: temp!,
+        systolicPressure: measurement.systolicPressure!,
+        diastolicPressure: measurement.diastolicPressure!,
+        respiratoryRate: measurement.respiratoryRate!,
+      })
+
+      const generatedAt =
+        measurement.generatedAt ?? measurement.timestamp
+
+      const identifiedAt = new Date().toISOString()
+
+      if (status !== 'normal' && generatedAt) {
+        const identificationTimeMs =
+          Date.parse(identifiedAt) - Date.parse(generatedAt)
+
+        if (
+          Number.isFinite(identificationTimeMs) &&
+          identificationTimeMs >= 0
+        ) {
+          console.log('[identification time]', {
+            device: serialNumber,
+            status,
+            generatedAt,
+            identifiedAt,
+            identificationTimeMs,
+          })
+        }
+      }
+    }
+
+    setMeasurements((current) =>
+      [measurement, ...current].slice(0, 100),
+    )
+  },
+)
+
 
     return () => {
       socket.disconnect()

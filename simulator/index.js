@@ -241,7 +241,8 @@ const buildMeasurement = (serialNumber) => {
     systolicPressure,
     diastolicPressure,
     respiratoryRate,
-    timestamp: now
+    timestamp: now,
+    generatedAt: now
   };
 };
 

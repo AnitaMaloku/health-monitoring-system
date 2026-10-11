@@ -14,6 +14,7 @@ type HealthMeasurementPayload = {
 	diastolicPressure?: number;
 	respiratoryRate?: number;
 	timestamp?: string;
+	generatedAt?: string;
 };
 
 const isFiniteNumber = (value: unknown): value is number => {
@@ -36,7 +37,8 @@ const normalizePayload = (rawPayload: string): HealthMeasurementPayload | null =
 			systolicPressure: isFiniteNumber(parsedPayload.systolicPressure) ? parsedPayload.systolicPressure : undefined,
 			diastolicPressure: isFiniteNumber(parsedPayload.diastolicPressure) ? parsedPayload.diastolicPressure : undefined,
 			respiratoryRate: isFiniteNumber(parsedPayload.respiratoryRate) ? parsedPayload.respiratoryRate : undefined,
-			timestamp: typeof parsedPayload.timestamp === "string" ? parsedPayload.timestamp : undefined
+			timestamp: typeof parsedPayload.timestamp === "string" ? parsedPayload.timestamp : undefined,
+			generatedAt: typeof parsedPayload.generatedAt === "string" ? parsedPayload.generatedAt: undefined
 		};
 	} catch {
 		return null;
@@ -98,7 +100,8 @@ const persistMeasurement = async (payload: HealthMeasurementPayload) => {
 	emitHealthMeasurement({
 		...measurement,
 		temp: measurement.temp === null ? null : Number(measurement.temp),
-		serialNumber: payload.serialNumber
+		serialNumber: payload.serialNumber,
+		generatedAt: payload.generatedAt ?? payload.timestamp
 	});
 };
 
